@@ -232,3 +232,97 @@ pipeline pipeline_new(void) {
   result->esta_en_primer_plano = false;
   return result;
 }
+
+/*
+ * Destruye `self'.
+ *   self: tubería a destruir.
+ * Requires: self != NULL
+ * Ensures: result == NULL <-- No deberia ser self == NULL?
+ */
+pipeline pipeline_destroy(pipeline self) {
+  assert(self != NULL);
+  // self->scomandos es una GList de scommandos,
+  // a cada scommando lo libero con scommand_destroy
+  g_list_free_full(self->scomandos, scommand_destroy);
+  self->scomandos = NULL;
+  self == NULL;
+  assert(self == NULL);
+  return self;
+}
+
+/* Modificadores */
+
+/*
+ * Agrega por detrás un comando simple a la secuencia.
+ *   self: pipeline al cual agregarle el comando simple.
+ *   sc: comando simple a agregar. El TAD se apropia del comando.
+ * Requires: self!=NULL && sc!=NULL
+ * Ensures: !pipeline_is_empty()
+ */
+void pipeline_push_back(pipeline self, scommand sc);
+
+/*
+ * Quita el comando simple de adelante de la secuencia.
+ *   self: pipeline al cual sacarle el comando simple del frente.
+ *      Destruye el comando extraido.
+ * Requires: self!=NULL && !pipeline_is_empty(self)
+ */
+void pipeline_pop_front(pipeline self);
+
+/*
+ * Define si el pipeline tiene que esperar o no.
+ *   self: pipeline que quiere ser establecido en su atributo de espera.
+ * Requires: self!=NULL
+ */
+void pipeline_set_wait(pipeline self, const bool w);
+
+/* Proyectores */
+
+/*
+ * Indica si la secuencia de comandos simples tiene longitud 0.
+ *   self: pipeline a decidir si está vacío.
+ *   Returns: ¿Está vacío de comandos simples el pipeline?
+ * Requires: self!=NULL
+ */
+bool pipeline_is_empty(const pipeline self);
+
+/*
+ * Da la longitud de la secuencia de comandos simples.
+ *   self: pipeline a medir.
+ *   Returns: largo del pipeline.
+ * Requires: self!=NULL
+ * Ensures: (pipeline_length(self)==0) == pipeline_is_empty()
+ *
+ */
+unsigned int pipeline_length(const pipeline self);
+
+/*
+ * Devuelve el comando simple de adelante de la secuencia.
+ *   self: pipeline al cual consultar cual es el comando simple del frente.
+ *   Returns: comando simple del frente. El comando devuelto sigue siendo
+ *      propiedad del TAD.
+ *      El resultado no es un "const scommand" ya que el llamador puede
+ *      hacer modificaciones en el comando, siempre y cuando no lo destruya.
+ * Requires: self!=NULL && !pipeline_is_empty(self)
+ * Ensures: result!=NULL
+ */
+scommand pipeline_front(const pipeline self);
+
+/*
+ * Consulta si el pipeline tiene que esperar o no.
+ *   self: pipeline a decidir si hay que esperar.
+ *   Returns: ¿Hay que esperar en el pipeline self?
+ * Requires: self!=NULL
+ */
+bool pipeline_get_wait(const pipeline self);
+
+/* Pretty printer para hacer debugging/logging.
+ * Genera una representación del pipeline en una cadena (aka "serializar").
+ *   self: pipeline a convertir.
+ *   Returns: una cadena con la representación del pipeline similar
+ *     a lo que se escribe en un shell. Debe destruirla el llamador.
+ * Requires: self!=NULL
+ * Ensures: pipeline_is_empty(self) || pipeline_get_wait(self) ||
+ * strlen(result)>0
+ */
+char *pipeline_to_string(const pipeline self);
