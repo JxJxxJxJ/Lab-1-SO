@@ -66,7 +66,8 @@ scommand scommand_destroy(scommand self) {
  * Ensures: !scommand_is_empty(self)
  */
 void scommand_push_back(scommand self, char *argument) {
-  assert(self != NULL && argument != NULL);
+  assert(self != NULL);
+  assert(argument != NULL);
   self->argumentos = g_list_append(self->argumentos, argument);
   self->length++;
   assert(!scommand_is_empty(self));
@@ -242,18 +243,19 @@ pipeline pipeline_new(void) {
  */
 // NOTA: Si a alguien se le ocurre no-romper la abstraccion aca cambielo
 
+// Es esto demasiado Vudu?
 // Creo un wraper para poder usar scommand como gfunc
-void scommand_destroy_gfunc(gpointer data, gpointer user_data);
-void scommand_destroy_gfunc(gpointer data, gpointer user_data) {
-  scommand_destroy((scommand)data);
-}
+// void scommand_destroy_gfunc(gpointer data, gpointer user_data);
+// void scommand_destroy_gfunc(gpointer data, gpointer user_data) {
+//   scommand_destroy((scommand)user_data);
+// }
 
 pipeline pipeline_destroy(pipeline self) {
   assert(self != NULL);
-  g_list_foreach(self->scomandos, scommand_destroy_gfunc, NULL);
-  g_list_free(self->scomandos);
-  self->scomandos = NULL;
-  // Libero pipeline
+  // g_list_foreach(self->scomandos, scommand_destroy_gfunc, NULL);
+  // g_list_free(self->scomandos);
+  // self->scomandos = NULL;
+  // // Libero pipeline
   self = NULL;
   return self;
 }
@@ -272,6 +274,7 @@ void pipeline_push_back(pipeline self, scommand sc) {
   assert(sc != NULL);
   self->scomandos = g_list_append(self->scomandos, sc);
   assert(!pipeline_is_empty(self));
+  self->length++;
 }
 
 /*
@@ -285,6 +288,7 @@ void pipeline_pop_front(pipeline self) {
   assert(!pipeline_is_empty(self));
   self->scomandos =
       g_list_remove(self->scomandos, g_list_first(self->scomandos));
+  self->length--;
 }
 
 /*
