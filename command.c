@@ -240,15 +240,18 @@ pipeline pipeline_new(void) {
  * Requires: self != NULL
  * Ensures: result == NULL <-- No deberia ser self == NULL?
  */
+
+// NOTA: Si a alguien se le ocurre no-romper la abstraccion aca cambielo
 pipeline pipeline_destroy(pipeline self) {
   assert(self != NULL);
-  // self->scomandos es una GList de scommandos,
-  // a cada scommando lo libero con scommand_destroy
-  g_list_free_full(self->scomandos, scommand_destroy);
+
+  for (scommand *iter, iter != NULL, iter = iter->next)
+    ;
+
   self->scomandos = NULL;
-  self == NULL;
-  assert(self == NULL);
-  return self;
+
+  free(self);
+  return NULL;
 }
 
 /* Modificadores */
@@ -276,7 +279,8 @@ void pipeline_push_back(pipeline self, scommand sc) {
 void pipeline_pop_front(pipeline self) {
   assert(self != NULL);
   assert(!pipeline_is_empty(self));
-  g_list_remove(self->scomandos, g_list_first(self->scomandos));
+  self->scomandos =
+      g_list_remove(self->scomandos, g_list_first(self->scomandos));
 }
 
 /*
