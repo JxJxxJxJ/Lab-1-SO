@@ -265,7 +265,7 @@ void pipeline_push_back(pipeline self, scommand sc) {
   assert(sc != NULL);
   g_list_append(self->scomandos, sc);
   assert(!pipeline_is_empty(self));
-};
+}
 
 /*
  * Quita el comando simple de adelante de la secuencia.
@@ -273,7 +273,11 @@ void pipeline_push_back(pipeline self, scommand sc) {
  *      Destruye el comando extraido.
  * Requires: self!=NULL && !pipeline_is_empty(self)
  */
-void pipeline_pop_front(pipeline self);
+void pipeline_pop_front(pipeline self) {
+  assert(self != NULL);
+  assert(!pipeline_is_empty(self));
+  g_list_remove(self->scomandos, g_list_first(self->scomandos));
+}
 
 /*
  * Define si el pipeline tiene que esperar o no.
