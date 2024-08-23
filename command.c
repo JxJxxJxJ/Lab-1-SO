@@ -68,7 +68,7 @@ scommand scommand_destroy(scommand self) {
 void scommand_push_back(scommand self, char *argument) {
   assert(self != NULL);
   assert(argument != NULL);
-  self->argumentos = g_list_append(self->argumentos, argument);
+  self->argumentos = g_list_append(self->argumentos, g_strdup(argument));
   self->length++;
   assert(!scommand_is_empty(self));
 }
