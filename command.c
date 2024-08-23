@@ -50,6 +50,7 @@ scommand scommand_destroy(scommand self) {
   assert(self != NULL);
 
   g_list_free_full(self->argumentos, g_free);
+  self->argumentos = NULL;
   free(self->redir_in);
   free(self->redir_out);
   free(self);
