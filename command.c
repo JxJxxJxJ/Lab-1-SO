@@ -242,17 +242,7 @@ pipeline pipeline_new(void) {
  */
 
 // NOTA: Si a alguien se le ocurre no-romper la abstraccion aca cambielo
-pipeline pipeline_destroy(pipeline self) {
-  assert(self != NULL);
-
-  for (scommand *iter, iter != NULL, iter = iter->next)
-    ;
-
-  self->scomandos = NULL;
-
-  free(self);
-  return NULL;
-}
+pipeline pipeline_destroy(pipeline self) {}
 
 /* Modificadores */
 
@@ -266,7 +256,7 @@ pipeline pipeline_destroy(pipeline self) {
 void pipeline_push_back(pipeline self, scommand sc) {
   assert(self != NULL);
   assert(sc != NULL);
-  g_list_append(self->scomandos, sc);
+  self->scomandos = g_list_append(self->scomandos, sc);
   assert(!pipeline_is_empty(self));
 }
 
@@ -317,7 +307,7 @@ bool pipeline_is_empty(const pipeline self) {
 unsigned int pipeline_length(const pipeline self) {
   assert(self != NULL);
   // Uso self->length en vez de pipeline_length para evitar recursion infinita
-  assert((self->length == 0) == pipeline_is_empty(self) != NULL);
+  assert((self->length == 0) == pipeline_is_empty(self));
   return self->length;
 }
 
@@ -336,7 +326,7 @@ scommand pipeline_front(const pipeline self) {
   assert(!pipeline_is_empty(self));
   scommand result = g_list_nth_data(self->scomandos, 0);
   assert(result != NULL);
-  return result
+  return result;
 }
 
 /*
@@ -368,7 +358,7 @@ char *pipeline_to_string(const pipeline self) {
   for (uint i = 0; i < g_list_length(self->scomandos); i++) {
     g_string_append(gstr, g_list_nth_data(self->scomandos, i));
     if (i != g_list_length(self->scomandos) - 1) {
-      g_string_append(gstr, ' | ');
+      g_string_append(gstr, " | ");
     }
   }
   // Le meto un & si hay que esperar a que la pipeline termine (primer plano)
