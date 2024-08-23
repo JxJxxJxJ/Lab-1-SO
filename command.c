@@ -284,7 +284,10 @@ void pipeline_pop_front(pipeline self) {
  *   self: pipeline que quiere ser establecido en su atributo de espera.
  * Requires: self!=NULL
  */
-void pipeline_set_wait(pipeline self, const bool w);
+void pipeline_set_wait(pipeline self, const bool w) {
+  assert(self != NULL);
+  self->esta_en_primer_plano = w;
+}
 
 /* Proyectores */
 
