@@ -300,7 +300,7 @@ void pipeline_set_wait(pipeline self, const bool w) {
 bool pipeline_is_empty(const pipeline self) {
   assert(self != NULL);
   return self->length == 0u;
-};
+}
 
 /*
  * Da la longitud de la secuencia de comandos simples.
@@ -315,7 +315,7 @@ unsigned int pipeline_length(const pipeline self) {
   // Uso self->length en vez de pipeline_length para evitar recursion infinita
   assert((self->length == 0) == pipeline_is_empty(self) != NULL);
   return self->length;
-};
+}
 
 /*
  * Devuelve el comando simple de adelante de la secuencia.
@@ -327,7 +327,13 @@ unsigned int pipeline_length(const pipeline self) {
  * Requires: self!=NULL && !pipeline_is_empty(self)
  * Ensures: result!=NULL
  */
-scommand pipeline_front(const pipeline self);
+scommand pipeline_front(const pipeline self) {
+  assert(self != NULL);
+  assert(!pipeline_is_empty(self));
+  scommand result = g_list_nth_data(self->scomandos, 0);
+  assert(result != NULL);
+  return result
+}
 
 /*
  * Consulta si el pipeline tiene que esperar o no.
