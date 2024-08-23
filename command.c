@@ -240,9 +240,23 @@ pipeline pipeline_new(void) {
  * Requires: self != NULL
  * Ensures: result == NULL <-- No deberia ser self == NULL?
  */
-
 // NOTA: Si a alguien se le ocurre no-romper la abstraccion aca cambielo
-pipeline pipeline_destroy(pipeline self) {}
+
+// Creo un wraper para poder usar scommand como gfunc
+void scommand_destroy_gfunc(gpointer data, gpointer user_data);
+void scommand_destroy_gfunc(gpointer data, gpointer user_data) {
+  scommand_destroy((scommand)data);
+}
+
+pipeline pipeline_destroy(pipeline self) {
+  assert(self != NULL);
+  g_list_foreach(self->scomandos, scommand_destroy_gfunc, NULL);
+  g_list_free(self->scomandos);
+  self->scomandos = NULL;
+  // Libero pipeline
+  self = NULL;
+  return self;
+}
 
 /* Modificadores */
 
