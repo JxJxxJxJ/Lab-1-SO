@@ -341,7 +341,10 @@ scommand pipeline_front(const pipeline self) {
  *   Returns: ¿Hay que esperar en el pipeline self?
  * Requires: self!=NULL
  */
-bool pipeline_get_wait(const pipeline self);
+bool pipeline_get_wait(const pipeline self) {
+  assert(self != NULL);
+  return self->esta_en_primer_plano;
+}
 
 /* Pretty printer para hacer debugging/logging.
  * Genera una representación del pipeline en una cadena (aka "serializar").
