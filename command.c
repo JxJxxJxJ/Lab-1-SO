@@ -355,4 +355,26 @@ bool pipeline_get_wait(const pipeline self) {
  * Ensures: pipeline_is_empty(self) || pipeline_get_wait(self) ||
  * strlen(result)>0
  */
-char *pipeline_to_string(const pipeline self);
+char *pipeline_to_string(const pipeline self) {
+  assert(self != NULL);
+  // Creo un GString vacio
+  GString *gstr = g_string_new(NULL);
+  // Itero sobre self->scomandos y voy agregando los comandos al string
+  // sin romper la fucking abstraccion
+  for (uint i = 0; i < g_list_length(self->scomandos); i++) {
+    g_string_append(gstr, g_list_nth_data(self->scomandos, i));
+    if (i != g_list_length(self->scomandos) - 1) {
+      g_string_append(gstr, ' | ');
+    }
+  }
+  // Le meto un & si hay que esperar a que la pipeline termine (primer plano)
+  if (self->esta_en_primer_plano) {
+    g_string_append(gstr, " &");
+  }
+  // Libera la memoria de la estructura del GString gstr
+  // y me devuelve la data adentro como char*
+  char *result = g_string_free(gstr, FALSE);
+  assert(pipeline_is_empty(self) || pipeline_get_wait(self) ||
+         strlen(result) > 0);
+  return result;
+}
