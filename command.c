@@ -125,7 +125,9 @@ bool scommand_is_empty(const scommand self) {
  */
 unsigned int scommand_length(const scommand self) {
   assert(self != NULL);
-  assert(scommand_length(self)==0) == scommand_is_empty(self)));
+  // Uso self -> length en vez de scommand_length(self)
+  // para evitar infinita recursion
+  assert((self->length == 0) == scommand_is_empty(self));
   return self->length;
 }
 
@@ -142,7 +144,7 @@ char *scommand_front(const scommand self) {
   assert(self != NULL);
   assert(!scommand_is_empty(self));
 
-  char *result = g_list_first(self->argumentos);
+  char *result = g_list_nth_data(self->argumentos, 0);
 
   assert(result != NULL);
   return result;
@@ -177,15 +179,35 @@ char *scommand_get_redir_out(const scommand self) {
  *   strlen(result)>0
  */
 char *scommand_to_string(const scommand self) {
-  assert(self!=NULL));
-  size_t bytes_necesarios_para_alocar = 0u;
+  assert(self != NULL);
+  // Creo un GString vacio
+  GString *gstr = g_string_new(NULL);
+  // Itero sobre self->argumentos y voy agregando los comandos al string
+  // sin romper la fucking abstraccion
+  for (uint i = 0; i < g_list_length(self->argumentos); i++) {
+    g_string_append(gstr, g_list_nth_data(self->argumentos, i));
+    if (i != g_list_length(self->argumentos) - 1) {
+      g_string_append_c(gstr, ' ');
+    }
+  }
+  // Le meto las redirecciones si existen
+  if (self->redir_in != NULL) {
+    g_string_append(gstr, " < ");
+    g_string_append(gstr, self->redir_in);
+  }
+  if (self->redir_out != NULL) {
+    g_string_append(gstr, " > ");
+    g_string_append(gstr, self->redir_out);
+  }
 
-  char* result = malloc(sizeof(bytes_necesarios_para_alocar))
+  // Libera la memoria de la estructura del GString gstr
+  // y me devuelve la data adentro como char*
+  char *result = g_string_free(gstr, FALSE);
 
-  assert(scommand_is_empty(self) ||
-  scommand_get_redir_in(self)==NULL ||
-  scommand_get_redir_out(self)==NULL) ||
-  strlen(result) > 0)
+  assert(scommand_is_empty(self) || scommand_get_redir_in(self) == NULL ||
+         scommand_get_redir_out(self) == NULL || strlen(result) > 0);
+
+  return result;
 }
 
 /*
