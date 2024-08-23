@@ -48,14 +48,12 @@ scommand scommand_new(void) { // NOTA: ALOCA MEMORIA
  */
 scommand scommand_destroy(scommand self) {
   assert(self != NULL);
-
   g_list_free_full(self->argumentos, g_free);
   self->argumentos = NULL;
   free(self->redir_in);
   free(self->redir_out);
   free(self);
   self = NULL;
-
   assert(self == NULL);
   return self;
 }
@@ -218,6 +216,7 @@ char *scommand_to_string(const scommand self) {
 struct pipeline_s {
   GList *scomandos;
   bool esta_en_primer_plano;
+  size_t length;
 };
 
 /*
@@ -231,6 +230,7 @@ pipeline pipeline_new(void) {
   pipeline result = malloc(sizeof(*result));
   result->scomandos = NULL;
   result->esta_en_primer_plano = false;
+  result->length = 0u;
   return result;
 }
 
@@ -285,17 +285,25 @@ void pipeline_set_wait(pipeline self, const bool w);
  *   Returns: ¿Está vacío de comandos simples el pipeline?
  * Requires: self!=NULL
  */
-bool pipeline_is_empty(const pipeline self);
+bool pipeline_is_empty(const pipeline self) {
+  assert(self != NULL);
+  return self->length == 0u;
+};
 
 /*
  * Da la longitud de la secuencia de comandos simples.
  *   self: pipeline a medir.
  *   Returns: largo del pipeline.
  * Requires: self!=NULL
- * Ensures: (pipeline_length(self)==0) == pipeline_is_empty()
+ * Ensures: (pipeline_length(self)==0) == pipeline_is_empty(self)
  *
  */
-unsigned int pipeline_length(const pipeline self);
+unsigned int pipeline_length(const pipeline self) {
+  assert(self != NULL);
+  // Uso self->length en vez de pipeline_length para evitar recursion infinita
+  assert((self->length == 0) == pipeline_is_empty(self) != NULL);
+  return self->length;
+};
 
 /*
  * Devuelve el comando simple de adelante de la secuencia.
