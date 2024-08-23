@@ -69,7 +69,7 @@ void scommand_push_back(scommand self, char *argument) {
   assert(self != NULL);
   assert(argument != NULL);
   self->argumentos = g_list_append(self->argumentos, argument);
-  self->length++;
+  self->length = self->length + 1;
   assert(!scommand_is_empty(self));
 }
 
@@ -78,12 +78,16 @@ void scommand_push_back(scommand self, char *argument) {
  *   self: comando simple al cual sacarle la cadena del frente.
  * Requires: self!=NULL && !scommand_is_empty(self)
  */
+
+// Adios abstraccion, +2% tests
 void scommand_pop_front(scommand self) {
   assert(self != NULL);
   assert(!scommand_is_empty(self));
-  self->argumentos =
-      g_list_remove(self->argumentos, g_list_first(self->argumentos));
-  self->length--;
+  GList *killme;
+  killme = self->argumentos;
+  self->argumentos = self->argumentos->next;
+  g_list_free_1(killme);
+  self->length = self->length - 1;
 }
 
 /*
@@ -140,6 +144,7 @@ unsigned int scommand_length(const scommand self) {
  * Requires: self!=NULL && !scommand_is_empty(self)
  * Ensures: result!=NULL
  */
+
 char *scommand_front(const scommand self) {
   assert(self != NULL);
   assert(!scommand_is_empty(self));
@@ -252,14 +257,16 @@ pipeline pipeline_new(void) {
 
 pipeline pipeline_destroy(pipeline self) {
   assert(self != NULL);
-  // g_list_foreach(self->scomandos, scommand_destroy_gfunc, NULL);
-  // g_list_free(self->scomandos);
-  // self->scomandos = NULL;
-  // // Libero pipeline
-  self = NULL;
-  return self;
+  GList *list_elem = self->scomandos;
+  while (list_elem) {
+    GList *kill_me = list_elem;
+    scommand_destroy(list_elem->data);
+    list_elem = list_elem->next;
+    g_list_free_1(kill_me);
+  }
+  free(self);
+  return NULL;
 }
-
 /* Modificadores */
 
 /*
