@@ -1,17 +1,16 @@
-#include <stdlib.h>
-#include <stdio.h>
-#include <stdbool.h>
-#include <string.h>
-#include <glib.h>
-#include <assert.h>
 #include "command.h"
+#include <assert.h>
+#include <glib.h>
+#include <stdbool.h>
+#include <stdio.h>
+#include <stdlib.h>
+#include <string.h>
 
 /*
  * ZONA DE SCOMMAND
  */
 
-struct scommand_s
-{
+struct scommand_s {
   GList *argumentos;
   char *redir_out;
   char *redir_in;
@@ -25,8 +24,7 @@ struct scommand_s
  *  scommand_get_redir_in (result) == NULL &&
  *  scommand_get_redir_out (result) == NULL
  */
-scommand scommand_new(void)
-{ // NOTA: ALOCA MEMORIA
+scommand scommand_new(void) { // NOTA: ALOCA MEMORIA
   scommand result = malloc(sizeof(*result));
   assert(result != NULL);
 
@@ -48,8 +46,7 @@ scommand scommand_new(void)
  * Requires: self != NULL
  * Ensures: result == NULL
  */
-scommand scommand_destroy(scommand self)
-{
+scommand scommand_destroy(scommand self) {
   assert(self != NULL);
 
   g_list_free_full(self->argumentos, g_free);
@@ -69,8 +66,7 @@ scommand scommand_destroy(scommand self)
  * Requires: self!=NULL && argument!=NULL
  * Ensures: !scommand_is_empty(self)
  */
-void scommand_push_back(scommand self, char *argument)
-{
+void scommand_push_back(scommand self, char *argument) {
   assert(self != NULL && argument != NULL);
   self->argumentos = g_list_append(self->argumentos, argument);
   self->length++;
@@ -82,11 +78,11 @@ void scommand_push_back(scommand self, char *argument)
  *   self: comando simple al cual sacarle la cadena del frente.
  * Requires: self!=NULL && !scommand_is_empty(self)
  */
-void scommand_pop_front(scommand self)
-{
+void scommand_pop_front(scommand self) {
   assert(self != NULL);
   assert(!scommand_is_empty(self));
-  self->argumentos = g_list_remove(self->argumentos, g_list_first(self->argumentos));
+  self->argumentos =
+      g_list_remove(self->argumentos, g_list_first(self->argumentos));
   self->length--;
 }
 
@@ -97,13 +93,11 @@ void scommand_pop_front(scommand self)
  *     o NULL si no se quiere redirección. El TAD se apropia de la referencia.
  * Requires: self!=NULL
  */
-void scommand_set_redir_in(scommand self, char *filename)
-{
+void scommand_set_redir_in(scommand self, char *filename) {
   assert(self != NULL);
   self->redir_in = filename;
 }
-void scommand_set_redir_out(scommand self, char *filename)
-{
+void scommand_set_redir_out(scommand self, char *filename) {
   assert(self != NULL);
   self->redir_out = filename;
 }
@@ -116,8 +110,7 @@ void scommand_set_redir_out(scommand self, char *filename)
  */
 
 /* Proyectores */
-bool scommand_is_empty(const scommand self)
-{
+bool scommand_is_empty(const scommand self) {
   assert(self != NULL);
   return self->length == 0u;
 }
@@ -130,8 +123,7 @@ bool scommand_is_empty(const scommand self)
  * Ensures: (scommand_length(self)==0) == scommand_is_empty(self)
  *
  */
-unsigned int scommand_length(const scommand self)
-{
+unsigned int scommand_length(const scommand self) {
   assert(self != NULL);
   assert(scommand_length(self)==0) == scommand_is_empty(self)));
   return self->length;
@@ -146,8 +138,7 @@ unsigned int scommand_length(const scommand self)
  * Requires: self!=NULL && !scommand_is_empty(self)
  * Ensures: result!=NULL
  */
-char *scommand_front(const scommand self)
-{
+char *scommand_front(const scommand self) {
   assert(self != NULL);
   assert(!scommand_is_empty(self));
 
@@ -164,15 +155,13 @@ char *scommand_front(const scommand self)
  *  o NULL si no está redirigida.
  * Requires: self!=NULL
  */
-char *scommand_get_redir_in(const scommand self)
-{
-  assert(self!=NULL);
+char *scommand_get_redir_in(const scommand self) {
+  assert(self != NULL);
   return self->redir_in;
 }
 
-char *scommand_get_redir_out(const scommand self)
-{
-  assert(self!=NULL);
+char *scommand_get_redir_out(const scommand self) {
+  assert(self != NULL);
   return self->redir_out;
 }
 
@@ -187,7 +176,7 @@ char *scommand_get_redir_out(const scommand self)
  *   scommand_get_redir_in(self)==NULL || scommand_get_redir_out(self)==NULL ||
  *   strlen(result)>0
  */
-char *scommand_to_string(const scommand self){
+char *scommand_to_string(const scommand self) {
   assert(self!=NULL));
   size_t bytes_necesarios_para_alocar = 0u;
 
@@ -203,8 +192,7 @@ char *scommand_to_string(const scommand self){
  * ZONA DE PIPELINE
  */
 
-struct pipeline_s
-{
+struct pipeline_s {
   GList *scomandos;
   bool esta_en_primer_plano;
 };
@@ -216,8 +204,7 @@ struct pipeline_s
  *  && pipeline_is_empty(result)
  *  && pipeline_get_wait(result)
  */
-pipeline pipeline_new(void)
-{
+pipeline pipeline_new(void) {
   pipeline result = malloc(sizeof(*result));
   result->scomandos = NULL;
   result->esta_en_primer_plano = false;
