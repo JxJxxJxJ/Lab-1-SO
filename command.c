@@ -258,9 +258,14 @@ pipeline pipeline_destroy(pipeline self) {
  *   self: pipeline al cual agregarle el comando simple.
  *   sc: comando simple a agregar. El TAD se apropia del comando.
  * Requires: self!=NULL && sc!=NULL
- * Ensures: !pipeline_is_empty()
+ * Ensures: !pipeline_is_empty(self)
  */
-void pipeline_push_back(pipeline self, scommand sc);
+void pipeline_push_back(pipeline self, scommand sc) {
+  assert(self != NULL);
+  assert(sc != NULL);
+  g_list_append(self->scomandos, sc);
+  assert(!pipeline_is_empty(self));
+};
 
 /*
  * Quita el comando simple de adelante de la secuencia.
