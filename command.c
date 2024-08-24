@@ -108,9 +108,7 @@ void scommand_set_redir_out(scommand self, char *filename) {
 /* Proyectores */
 bool scommand_is_empty(const scommand self) {
   assert(self != NULL);
-  // Esto no es romper abstraccion no? Yo se que en la estructura de la gqueue
-  // hay un campo length
-  return self->argumentos->length == 0u;
+  return g_queue_get_length(self->argumentos) == 0u;
 }
 
 /*
@@ -125,8 +123,8 @@ unsigned int scommand_length(const scommand self) {
   assert(self != NULL);
   // Uso self -> length en vez de scommand_length(self)
   // para evitar infinita recursion
-  assert((self->argumentos->length == 0) == scommand_is_empty(self));
-  return self->argumentos->length;
+  assert((g_queue_get_length(self->argumentos) == 0) == scommand_is_empty(self));
+  return g_queue_get_length(self->argumentos);
 }
 
 /*
