@@ -66,14 +66,9 @@ scommand scommand_destroy(scommand self) {
  * Ensures: !scommand_is_empty(self)
  */
 void scommand_push_back(scommand self, char *argument) {
-<<<<<<< HEAD
   assert(self != NULL);
   assert(argument != NULL);
   self->argumentos = g_list_append(self->argumentos, g_strdup(argument));
-=======
-  assert(self != NULL && argument != NULL);
-  self->argumentos = g_list_append(self->argumentos, argument);
->>>>>>> 8981b6a (abstraccion una vez mas)
   self->length++;
   assert(!scommand_is_empty(self));
 }
