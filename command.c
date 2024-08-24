@@ -66,9 +66,14 @@ scommand scommand_destroy(scommand self) {
  * Ensures: !scommand_is_empty(self)
  */
 void scommand_push_back(scommand self, char *argument) {
+<<<<<<< HEAD
   assert(self != NULL);
   assert(argument != NULL);
   self->argumentos = g_list_append(self->argumentos, g_strdup(argument));
+=======
+  assert(self != NULL && argument != NULL);
+  self->argumentos = g_list_append(self->argumentos, argument);
+>>>>>>> 8981b6a (abstraccion una vez mas)
   self->length++;
   assert(!scommand_is_empty(self));
 }
@@ -78,16 +83,12 @@ void scommand_push_back(scommand self, char *argument) {
  *   self: comando simple al cual sacarle la cadena del frente.
  * Requires: self!=NULL && !scommand_is_empty(self)
  */
-
-// Adios abstraccion, +2% tests
 void scommand_pop_front(scommand self) {
   assert(self != NULL);
   assert(!scommand_is_empty(self));
-  GList *killme;
-  killme = self->argumentos;
-  self->argumentos = self->argumentos->next;
-  g_list_free_1(killme);
-  self->length = self->length - 1;
+  self->argumentos =
+      g_list_remove(self->argumentos, g_list_first(self->argumentos));
+  self->length--;
 }
 
 /*
@@ -144,7 +145,6 @@ unsigned int scommand_length(const scommand self) {
  * Requires: self!=NULL && !scommand_is_empty(self)
  * Ensures: result!=NULL
  */
-
 char *scommand_front(const scommand self) {
   assert(self != NULL);
   assert(!scommand_is_empty(self));
@@ -246,27 +246,16 @@ pipeline pipeline_new(void) {
  * Requires: self != NULL
  * Ensures: result == NULL <-- No deberia ser self == NULL?
  */
+
 // NOTA: Si a alguien se le ocurre no-romper la abstraccion aca cambielo
-
-// Es esto demasiado Vudu?
-// Creo un wraper para poder usar scommand como gfunc
-// void scommand_destroy_gfunc(gpointer data, gpointer user_data);
-// void scommand_destroy_gfunc(gpointer data, gpointer user_data) {
-//   scommand_destroy((scommand)user_data);
-// }
-
 pipeline pipeline_destroy(pipeline self) {
   assert(self != NULL);
-  GList *list_elem = self->scomandos;
-  while (list_elem) {
-    GList *kill_me = list_elem;
-    scommand_destroy(list_elem->data);
-    list_elem = list_elem->next;
-    g_list_free_1(kill_me);
-  }
-  free(self);
-  return NULL;
+
+  self == NULL;
+  assert(self == NULL);
+  return self;
 }
+
 /* Modificadores */
 
 /*
