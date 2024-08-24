@@ -108,7 +108,8 @@ void scommand_set_redir_out(scommand self, char *filename) {
 /* Proyectores */
 bool scommand_is_empty(const scommand self) {
   assert(self != NULL);
-  // Esto no es romper abstraccion no? Yo se que en la estructura de la gqueue hay un campo length
+  // Esto no es romper abstraccion no? Yo se que en la estructura de la gqueue
+  // hay un campo length
   return self->argumentos->length == 0u;
 }
 
@@ -364,7 +365,8 @@ char *pipeline_to_string(const pipeline self) {
   // sin romper la fucking abstraccion
   for (guint i = 0; i < g_queue_get_length(self->scomandos); i++) {
     // añado la representacion del scomando en formato de string
-    g_string_append(gstr, scommand_to_string(g_queue_peek_nth(self->scomandos, i)));
+    g_string_append(gstr,
+                    scommand_to_string(g_queue_peek_nth(self->scomandos, i)));
     if (i != g_queue_get_length(self->scomandos) - 1) {
       g_string_append(gstr, " | ");
     }
