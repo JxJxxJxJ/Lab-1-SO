@@ -246,7 +246,7 @@ pipeline pipeline_new(void) {
 pipeline pipeline_destroy(pipeline self) {
   assert(self != NULL);
 
-  self == NULL;
+  self = NULL;
   assert(self == NULL);
   return self;
 }
