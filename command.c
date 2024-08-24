@@ -242,13 +242,17 @@ pipeline pipeline_new(void) {
  * Ensures: result == NULL <-- No deberia ser self == NULL?
  */
 
+// Wrapper para castear scommand_destroy a GDestroyNotify
+static void scommand_destroy_wrapper(void *data) {
+  scommand_destroy((scommand)data);
+}
+
 // NOTA: Si a alguien se le ocurre no-romper la abstraccion aca cambielo
 pipeline pipeline_destroy(pipeline self) {
   assert(self != NULL);
-
-  self = NULL;
-  assert(self == NULL);
-  return self;
+  g_list_free_full(self->scomandos, (GDestroyNotify)scommand_destroy_wrapper);
+  free(self);
+  return NULL;
 }
 
 /* Modificadores */
