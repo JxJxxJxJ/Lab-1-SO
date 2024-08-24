@@ -179,23 +179,23 @@ char *scommand_to_string(const scommand self) {
   // Itero sobre self->argumentos y voy agregando los comandos al string
   // sin romper la fucking abstraccion
   for (uint i = 0; i < g_queue_get_length(self->argumentos); i++) {
-    g_string_append(gstr, g_queue_peek_nth(self->argumentos, i));
+    gstr = g_string_append(gstr, g_queue_peek_nth(self->argumentos, i));
     if (i != g_queue_get_length(self->argumentos) - 1) {
-      g_string_append_c(gstr, ' ');
+      gstr = g_string_append_c(gstr, ' ');
     }
   }
   // Le meto las redirecciones si existen
   if (self->redir_in != NULL) {
-    g_string_append(gstr, " < ");
-    g_string_append(gstr, self->redir_in);
+    gstr = g_string_append(gstr, " < ");
+    gstr = g_string_append(gstr, self->redir_in);
   }
   if (self->redir_out != NULL) {
-    g_string_append(gstr, " > ");
-    g_string_append(gstr, self->redir_out);
+    gstr = g_string_append(gstr, " > ");
+    gstr = g_string_append(gstr, self->redir_out);
   }
   // Libera la memoria de la estructura del GString gstr
   // y me devuelve la data adentro como char*
-  char *result = g_string_free(gstr, FALSE);
+  char *result = g_string_free_and_steal(gstr);
   assert(scommand_is_empty(self) || scommand_get_redir_in(self) == NULL ||
          scommand_get_redir_out(self) == NULL || strlen(result) > 0);
   return result;
@@ -363,19 +363,19 @@ char *pipeline_to_string(const pipeline self) {
   // sin romper la fucking abstraccion
   for (guint i = 0; i < g_queue_get_length(self->scomandos); i++) {
     // añado la representacion del scomando en formato de string
-    g_string_append(gstr,
+    gstr = g_string_append(gstr,
                     scommand_to_string(g_queue_peek_nth(self->scomandos, i)));
     if (i != g_queue_get_length(self->scomandos) - 1) {
-      g_string_append(gstr, " | ");
+      gstr = g_string_append(gstr, " | ");
     }
   }
   // Le meto un & si hay que esperar a que la pipeline termine (primer plano)
   if (self->esta_en_primer_plano) {
-    g_string_append(gstr, " &");
+    gstr = g_string_append(gstr, " &");
   }
   // Libera la memoria de la estructura del GString gstr
   // y me devuelve la data adentro como char*
-  char *result = g_string_free(gstr, FALSE);
+  char *result = g_string_free_and_steal(gstr);
   assert(pipeline_is_empty(self) || pipeline_get_wait(self) ||
          strlen(result) > 0);
   return result;
