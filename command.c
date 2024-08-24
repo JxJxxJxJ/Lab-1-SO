@@ -14,7 +14,6 @@ struct scommand_s {
   GQueue *argumentos;
   char *redir_out;
   char *redir_in;
-  size_t length;
 };
 
 /*
@@ -31,7 +30,6 @@ scommand scommand_new(void) { // NOTA: ALOCA MEMORIA
   result->argumentos = g_queue_new();
   result->redir_in = NULL;
   result->redir_out = NULL;
-  result->length = 0u;
 
   assert(result != NULL);
   assert(scommand_is_empty(result));
@@ -69,7 +67,6 @@ void scommand_push_back(scommand self, char *argument) {
   assert(self != NULL);
   assert(argument != NULL);
   g_queue_push_tail(self->argumentos, g_strdup(argument));
-  self->length++;
   assert(!scommand_is_empty(self));
 }
 
@@ -83,7 +80,6 @@ void scommand_pop_front(scommand self) {
   gboolean b =
       g_queue_remove(self->argumentos, g_queue_peek_head(self->argumentos));
   assert(b);
-  self->length--;
 }
 
 /*
@@ -112,7 +108,8 @@ void scommand_set_redir_out(scommand self, char *filename) {
 /* Proyectores */
 bool scommand_is_empty(const scommand self) {
   assert(self != NULL);
-  return self->length == 0u;
+  // Esto no es romper abstraccion no? Yo se que en la estructura de la gqueue hay un campo length
+  return self->argumentos->length == 0u;
 }
 
 /*
@@ -127,8 +124,8 @@ unsigned int scommand_length(const scommand self) {
   assert(self != NULL);
   // Uso self -> length en vez de scommand_length(self)
   // para evitar infinita recursion
-  assert((self->length == 0) == scommand_is_empty(self));
-  return self->length;
+  assert((self->argumentos->length == 0) == scommand_is_empty(self));
+  return self->argumentos->length;
 }
 
 /*
@@ -364,7 +361,8 @@ char *pipeline_to_string(const pipeline self) {
   // Itero sobre self->scomandos y voy agregando los comandos al string
   // sin romper la fucking abstraccion
   for (guint i = 0; i < g_queue_get_length(self->scomandos); i++) {
-    g_string_append(gstr, g_queue_peek_nth(self->scomandos, i));
+    // añado la representacion del scomando en formato de string
+    g_string_append(gstr, scommand_to_string(g_queue_peek_nth(self->scomandos, i)));
     if (i != g_queue_get_length(self->scomandos) - 1) {
       g_string_append(gstr, " | ");
     }
