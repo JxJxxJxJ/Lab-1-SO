@@ -50,3 +50,12 @@ modules.order
 Module.symvers
 Mkfile.old
 dkms.conf
+
+# Archivos borrados por el make clean
+runner
+runner-command
+runner-parsing
+leaktest
+*.o
+test*.log
+.depend
