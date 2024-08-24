@@ -80,7 +80,9 @@ void scommand_push_back(scommand self, char *argument) {
  */
 void scommand_pop_front(scommand self) {
   assert(self != NULL && !scommand_is_empty(self));
-  self->argumentos = g_queue_pop_head(self->argumentos);
+  gboolean b =
+      g_queue_remove(self->argumentos, g_queue_peek_head(self->argumentos));
+  assert(b);
   self->length--;
 }
 
