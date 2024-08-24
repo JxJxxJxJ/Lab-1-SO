@@ -221,7 +221,7 @@ struct pipeline_s {
  */
 pipeline pipeline_new(void) {
   pipeline result = malloc(sizeof(*result));
-  result->scomandos = NULL;
+  result->scomandos = g_queue_new();
   result->esta_en_primer_plano = false;
   result->length = 0u;
   return result;
@@ -261,8 +261,8 @@ void pipeline_push_back(pipeline self, scommand sc) {
   assert(self != NULL);
   assert(sc != NULL);
   g_queue_push_tail(self->scomandos, sc);
-  assert(!pipeline_is_empty(self));
   self->length++;
+  assert(!pipeline_is_empty(self));
 }
 
 /*
@@ -274,7 +274,9 @@ void pipeline_push_back(pipeline self, scommand sc) {
 void pipeline_pop_front(pipeline self) {
   assert(self != NULL);
   assert(!pipeline_is_empty(self));
-  self->scomandos = g_queue_pop_head(self->scomandos);
+  // g_queue_pop_head popea el primer elemento y lo devuelve como data
+  scommand killme = g_queue_pop_head(self->scomandos);
+  scommand_destroy(killme);
   self->length--;
 }
 

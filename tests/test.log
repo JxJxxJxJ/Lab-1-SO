@@ -39,14 +39,14 @@ test_pipeline.c:77:P:Precondition:test_front_empty:0: Passed
 test_pipeline.c:85:P:Precondition:test_get_wait_null:0: Passed
 test_pipeline.c:91:P:Precondition:test_to_string_null:0: Passed
 test_pipeline.c:99:P:Creation:test_new_destroy:0: Passed
-test_pipeline.c:124:E:Functionality:test_adding_emptying:0: (after this point) Received signal 6 (Aborted)
-test_pipeline.c:143:E:Functionality:test_adding_emptying_length:0: (after this point) Received signal 6 (Aborted)
-test_pipeline.c:157:E:Functionality:test_fifo:0: (after this point) Received signal 6 (Aborted)
-test_pipeline.c:176:E:Functionality:test_front_idempotent:0: (after this point) Received signal 6 (Aborted)
-test_pipeline.c:188:E:Functionality:test_front_is_back:0: (after this point) Received signal 6 (Aborted)
-test_pipeline.c:197:E:Functionality:test_front_is_not_back:0: (after this point) Received signal 6 (Aborted)
+test_pipeline.c:133:P:Functionality:test_adding_emptying:0: Passed
+test_pipeline.c:150:P:Functionality:test_adding_emptying_length:0: Passed
+test_pipeline.c:169:P:Functionality:test_fifo:0: Passed
+test_pipeline.c:182:P:Functionality:test_front_idempotent:0: Passed
+test_pipeline.c:192:P:Functionality:test_front_is_back:0: Passed
+test_pipeline.c:203:P:Functionality:test_front_is_not_back:0: Passed
 test_pipeline.c:212:P:Functionality:test_wait:0: Passed
 test_pipeline.c:221:P:Functionality:test_to_string_empty:0: Passed
-test_pipeline.c:229:E:Functionality:test_to_string:0: (after this point) Received signal 6 (Aborted)
+test_pipeline.c:248:F:Functionality:test_to_string:0: Assertion 'n < 2 || strchr(strrchr(str, '|'), '&') != NULL' failed
 Results for all suites run:
-85%: Checks: 48, Failures: 0, Errors: 7
+97%: Checks: 48, Failures: 1, Errors: 0
