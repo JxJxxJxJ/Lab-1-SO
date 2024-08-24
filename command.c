@@ -247,7 +247,8 @@ static void scommand_destroy_wrapper(void *data) {
   scommand_destroy((scommand)data);
 }
 
-// NOTA: Si a alguien se le ocurre no-romper la abstraccion aca cambielo
+// NOTA: Si a alguien se le ocurre otra forma sin romper la abstraccion aca
+// cambielo
 pipeline pipeline_destroy(pipeline self) {
   assert(self != NULL);
   g_list_free_full(self->scomandos, (GDestroyNotify)scommand_destroy_wrapper);
