@@ -11,7 +11,7 @@
  */
 
 struct scommand_s {
-  GList *argumentos;
+  GQueue *argumentos;
   char *redir_out;
   char *redir_in;
   size_t length;
@@ -28,7 +28,7 @@ scommand scommand_new(void) { // NOTA: ALOCA MEMORIA
   scommand result = malloc(sizeof(*result));
   assert(result != NULL);
 
-  result->argumentos = NULL;
+  result->argumentos = g_queue_new();
   result->redir_in = NULL;
   result->redir_out = NULL;
   result->length = 0u;
@@ -48,7 +48,7 @@ scommand scommand_new(void) { // NOTA: ALOCA MEMORIA
  */
 scommand scommand_destroy(scommand self) {
   assert(self != NULL);
-  g_list_free_full(self->argumentos, g_free);
+  g_queue_free_full(self->argumentos, g_free);
   self->argumentos = NULL;
   free(self->redir_in);
   free(self->redir_out);
@@ -68,7 +68,7 @@ scommand scommand_destroy(scommand self) {
 void scommand_push_back(scommand self, char *argument) {
   assert(self != NULL);
   assert(argument != NULL);
-  self->argumentos = g_list_append(self->argumentos, g_strdup(argument));
+  g_queue_push_tail(self->argumentos, g_strdup(argument));
   self->length++;
   assert(!scommand_is_empty(self));
 }
@@ -79,10 +79,8 @@ void scommand_push_back(scommand self, char *argument) {
  * Requires: self!=NULL && !scommand_is_empty(self)
  */
 void scommand_pop_front(scommand self) {
-  assert(self != NULL);
-  assert(!scommand_is_empty(self));
-  self->argumentos =
-      g_list_remove(self->argumentos, g_list_first(self->argumentos));
+  assert(self != NULL && !scommand_is_empty(self));
+  self->argumentos = g_queue_pop_head(self->argumentos);
   self->length--;
 }
 
@@ -143,9 +141,7 @@ unsigned int scommand_length(const scommand self) {
 char *scommand_front(const scommand self) {
   assert(self != NULL);
   assert(!scommand_is_empty(self));
-
-  char *result = g_list_nth_data(self->argumentos, 0);
-
+  char *result = g_queue_peek_head(self->argumentos);
   assert(result != NULL);
   return result;
 }
@@ -184,9 +180,9 @@ char *scommand_to_string(const scommand self) {
   GString *gstr = g_string_new(NULL);
   // Itero sobre self->argumentos y voy agregando los comandos al string
   // sin romper la fucking abstraccion
-  for (uint i = 0; i < g_list_length(self->argumentos); i++) {
-    g_string_append(gstr, g_list_nth_data(self->argumentos, i));
-    if (i != g_list_length(self->argumentos) - 1) {
+  for (uint i = 0; i < g_queue_get_length(self->argumentos); i++) {
+    g_string_append(gstr, g_queue_peek_nth(self->argumentos, i));
+    if (i != g_queue_get_length(self->argumentos) - 1) {
       g_string_append_c(gstr, ' ');
     }
   }
@@ -199,14 +195,11 @@ char *scommand_to_string(const scommand self) {
     g_string_append(gstr, " > ");
     g_string_append(gstr, self->redir_out);
   }
-
   // Libera la memoria de la estructura del GString gstr
   // y me devuelve la data adentro como char*
   char *result = g_string_free(gstr, FALSE);
-
   assert(scommand_is_empty(self) || scommand_get_redir_in(self) == NULL ||
          scommand_get_redir_out(self) == NULL || strlen(result) > 0);
-
   return result;
 }
 
@@ -215,7 +208,7 @@ char *scommand_to_string(const scommand self) {
  */
 
 struct pipeline_s {
-  GList *scomandos;
+  GQueue *scomandos;
   bool esta_en_primer_plano;
   size_t length;
 };
@@ -251,7 +244,7 @@ static void scommand_destroy_wrapper(void *data) {
 // cambielo
 pipeline pipeline_destroy(pipeline self) {
   assert(self != NULL);
-  g_list_free_full(self->scomandos, (GDestroyNotify)scommand_destroy_wrapper);
+  g_queue_free_full(self->scomandos, (GDestroyNotify)scommand_destroy_wrapper);
   free(self);
   return NULL;
 }
@@ -268,7 +261,7 @@ pipeline pipeline_destroy(pipeline self) {
 void pipeline_push_back(pipeline self, scommand sc) {
   assert(self != NULL);
   assert(sc != NULL);
-  self->scomandos = g_list_append(self->scomandos, sc);
+  g_queue_push_tail(self->scomandos, sc);
   assert(!pipeline_is_empty(self));
   self->length++;
 }
@@ -282,8 +275,7 @@ void pipeline_push_back(pipeline self, scommand sc) {
 void pipeline_pop_front(pipeline self) {
   assert(self != NULL);
   assert(!pipeline_is_empty(self));
-  self->scomandos =
-      g_list_remove(self->scomandos, g_list_first(self->scomandos));
+  self->scomandos = g_queue_pop_head(self->scomandos);
   self->length--;
 }
 
@@ -338,7 +330,7 @@ unsigned int pipeline_length(const pipeline self) {
 scommand pipeline_front(const pipeline self) {
   assert(self != NULL);
   assert(!pipeline_is_empty(self));
-  scommand result = g_list_nth_data(self->scomandos, 0);
+  scommand result = g_queue_peek_head(self->scomandos);
   assert(result != NULL);
   return result;
 }
@@ -369,9 +361,9 @@ char *pipeline_to_string(const pipeline self) {
   GString *gstr = g_string_new(NULL);
   // Itero sobre self->scomandos y voy agregando los comandos al string
   // sin romper la fucking abstraccion
-  for (uint i = 0; i < g_list_length(self->scomandos); i++) {
-    g_string_append(gstr, g_list_nth_data(self->scomandos, i));
-    if (i != g_list_length(self->scomandos) - 1) {
+  for (guint i = 0; i < g_queue_get_length(self->scomandos); i++) {
+    g_string_append(gstr, g_queue_peek_nth(self->scomandos, i));
+    if (i != g_queue_get_length(self->scomandos) - 1) {
       g_string_append(gstr, " | ");
     }
   }
