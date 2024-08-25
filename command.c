@@ -123,7 +123,8 @@ unsigned int scommand_length(const scommand self) {
   assert(self != NULL);
   // Uso self -> length en vez de scommand_length(self)
   // para evitar infinita recursion
-  assert((g_queue_get_length(self->argumentos) == 0) == scommand_is_empty(self));
+  assert((g_queue_get_length(self->argumentos) == 0) ==
+         scommand_is_empty(self));
   return g_queue_get_length(self->argumentos);
 }
 
@@ -221,7 +222,7 @@ struct pipeline_s {
 pipeline pipeline_new(void) {
   pipeline result = malloc(sizeof(*result));
   result->scomandos = g_queue_new();
-  result->esta_en_primer_plano = false;
+  result->esta_en_primer_plano = true;
   result->length = 0u;
   return result;
 }
@@ -363,14 +364,16 @@ char *pipeline_to_string(const pipeline self) {
   // sin romper la fucking abstraccion
   for (guint i = 0; i < g_queue_get_length(self->scomandos); i++) {
     // añado la representacion del scomando en formato de string
-    gstr = g_string_append(gstr,
-                    scommand_to_string(g_queue_peek_nth(self->scomandos, i)));
+    gstr = g_string_append(
+        gstr, scommand_to_string(g_queue_peek_nth(self->scomandos, i)));
     if (i != g_queue_get_length(self->scomandos) - 1) {
       gstr = g_string_append(gstr, " | ");
     }
   }
-  // Le meto un & si hay que esperar a que la pipeline termine (primer plano)
-  if (self->esta_en_primer_plano || g_queue_get_length(self->scomandos) >= 2) {
+  // Le meto un & si no hay que esperar a que la pipeline termine (segundo
+  // plano)
+  if (!(self->esta_en_primer_plano) &&
+      g_queue_get_length(self->scomandos) >= 1) {
     gstr = g_string_append(gstr, " &");
   }
   // Libera la memoria de la estructura del GString gstr
