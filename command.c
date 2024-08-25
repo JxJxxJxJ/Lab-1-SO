@@ -371,7 +371,7 @@ char *pipeline_to_string(const pipeline self) {
     }
   }
   // Le meto un & si no hay que esperar a que la pipeline termine (segundo
-  // plano)
+  // plano) y que al menos haya un comando por correr
   if (!(self->esta_en_primer_plano) &&
       g_queue_get_length(self->scomandos) >= 1) {
     gstr = g_string_append(gstr, " &");
