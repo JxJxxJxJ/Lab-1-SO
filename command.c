@@ -370,7 +370,7 @@ char *pipeline_to_string(const pipeline self) {
     }
   }
   // Le meto un & si hay que esperar a que la pipeline termine (primer plano)
-  if (self->esta_en_primer_plano) {
+  if (self->esta_en_primer_plano || g_queue_get_length(self->scomandos) >= 2) {
     gstr = g_string_append(gstr, " &");
   }
   // Libera la memoria de la estructura del GString gstr
