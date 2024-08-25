@@ -26,11 +26,9 @@ struct scommand_s {
 scommand scommand_new(void) { // NOTA: ALOCA MEMORIA
   scommand result = malloc(sizeof(*result));
   assert(result != NULL);
-
   result->argumentos = g_queue_new();
   result->redir_in = NULL;
   result->redir_out = NULL;
-
   assert(result != NULL);
   assert(scommand_is_empty(result));
   assert(scommand_get_redir_in(result) == NULL);
