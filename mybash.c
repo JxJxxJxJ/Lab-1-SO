@@ -20,6 +20,7 @@ int main(int argc, char *argv[]) {
   // ---------------------------------------------------------
   // | Zona para debugear, codigo temporal                   |
   // ---------------------------------------------------------
+  show_prompt();
   Parser parser = parser_new(stdin);
   pipeline pipe = parse_pipeline(parser);
   printf("El pipe parseado desde stdin es: \n %s\n", pipeline_to_string(pipe));
