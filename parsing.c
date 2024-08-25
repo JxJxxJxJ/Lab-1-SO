@@ -23,17 +23,20 @@ static scommand parse_scommand(Parser p) {
     if (tipo_de_argumento == ARG_NORMAL) {
       // Lo meto como argumento normal
       scommand_push_back(sc, argumento);
-      printf("Meti un %s", argumento);
+      printf("Meti un %s\n", argumento);
     }
     if (tipo_de_argumento == ARG_INPUT) {
       // Lo meto como argumento de redir_input
       scommand_set_redir_in(sc, argumento);
-      printf("Meti un %s", argumento);
+      printf("Meti un %s\n", argumento);
     }
     if (tipo_de_argumento == ARG_OUTPUT) {
       // Lo meto como argumento de redir_output
       scommand_set_redir_out(sc, argumento);
-      printf("Meti un %s", argumento);
+      printf("Meti un %s\n", argumento); // Para debug
+    }
+    if (argumento == NULL) {
+      printf("Error al procesar argumento, argumento == NULL\n");
     }
     parser_skip_blanks(p);
   }
