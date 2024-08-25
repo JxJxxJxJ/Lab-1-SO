@@ -13,7 +13,6 @@ bool builtin_is_internal(scommand cmd);
  *
  */
 
-
 bool builtin_alone(pipeline p);
 /*
  * Indica si el pipeline tiene solo un elemento y si este se corresponde a un
@@ -38,4 +37,3 @@ void builtin_run(scommand cmd);
  */
 
 #endif
-

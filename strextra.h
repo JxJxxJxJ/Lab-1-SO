@@ -1,8 +1,7 @@
 #ifndef _STREXTRA_H_
 #define _STREXTRA_H_
 
-
-char * strmerge(char *s1, char *s2);
+char *strmerge(char *s1, char *s2);
 /*
  * Concatena las cadenas en s1 y s2 devolviendo nueva memoria (debe ser
  * liberada por el llamador con free())
@@ -18,6 +17,5 @@ char * strmerge(char *s1, char *s2);
  *     merge != NULL && strlen(merge) == strlen(s1) + strlen(s2)
  *
  */
-
 
 #endif

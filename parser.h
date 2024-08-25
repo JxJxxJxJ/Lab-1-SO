@@ -1,18 +1,18 @@
 #ifndef PARSER_H
 #define PARSER_H
 
-#include <stdbool.h>    /* bool */
-#include <stdio.h>      /* FILE */
-#include "command.h"    /* pipeline */
+#include "command.h" /* pipeline */
+#include <stdbool.h> /* bool */
+#include <stdio.h>   /* FILE */
 
 /* Tipo opaco, implementación oculta */
-typedef struct parser_s * Parser;
+typedef struct parser_s *Parser;
 
 typedef enum {
-    ARG_NORMAL, // Indicates a command name or command argument type
-    ARG_INPUT,  // Indicates an input redirection
-    ARG_OUTPUT  // Indicates an output redirection
-} arg_kind_t; // An auxiliary type for parser_next_argument() 
+  ARG_NORMAL, // Indicates a command name or command argument type
+  ARG_INPUT,  // Indicates an input redirection
+  ARG_OUTPUT  // Indicates an output redirection
+} arg_kind_t; // An auxiliary type for parser_next_argument()
 
 Parser parser_new(FILE *input);
 /*
@@ -25,7 +25,6 @@ Parser parser_new(FILE *input);
  *     o NULL en caso de haber un error de inicialización
  */
 
-
 Parser parser_destroy(Parser parser);
 /*
  * Destructor de Parser.
@@ -35,8 +34,7 @@ Parser parser_destroy(Parser parser);
  *     Devuelve NULL
  */
 
-
-char * parser_next_argument(Parser parser, arg_kind_t *arg_type);
+char *parser_next_argument(Parser parser, arg_kind_t *arg_type);
 /*
  * Procesa el próximo argumento e indica si corresponde a un argumento normal, o
  * si es una redirección de entrada/salida. Si se encuentra un símbolo del
@@ -46,7 +44,7 @@ char * parser_next_argument(Parser parser, arg_kind_t *arg_type);
  * ls -l -a  > salida.txt < entrada.txt | wc -l     &  \n
  *
  * cat /proc/cpuinfo | grep model
- *  
+ *
  *  Salida 1: "ls", ARG_NORMAL
  *  Salida 2: "-l", ARG_NORMAL
  *  Salida 3: "-a", ARG_NORMAL
@@ -61,7 +59,7 @@ char * parser_next_argument(Parser parser, arg_kind_t *arg_type);
  * char *arg;
  * arg = parser_next_argument(parser, &type);
  * if (type == ARG_NORMAL) {
- * } 
+ * }
  *
  * - En `type` se guarda el tipo de argumento:
  *   + ARG_NORMAL: Era el nombre de un comando o uno de sus argumentos
@@ -81,13 +79,12 @@ char * parser_next_argument(Parser parser, arg_kind_t *arg_type);
  *
  */
 
-
 void parser_op_background(Parser parser, bool *was_op_background);
 /*
  * Intenta leer un operador de background "&" e indica si se encontró dicho
  * operador. En caso de encontrar un "&", el operador se consume en caso
  * contrario no se consume ningún símbolo de la entrada.
- * 
+ *
  * EJEMPLO:
  *
  * bool is_background;
@@ -101,13 +98,12 @@ void parser_op_background(Parser parser, bool *was_op_background);
  *
  */
 
-
 void parser_skip_blanks(Parser parser);
 /*
  * Consume todos los caracteres en blanco a continuación que hay en la entrada.
  * Detiene el procesamiento ante cualquier símbolo que no es un espacio (" ") o
  * un tabulador ("\t").
- * 
+ *
  * EJEMPLO:
  *
  * parser_skip_blanks(parser);
@@ -123,7 +119,7 @@ void parser_op_pipe(Parser parser, bool *was_op_pipe);
  * Intenta leer un operador de pipe "|" e indica si se encontró dicho
  * operador. En caso de encontrar un "|", el operador se consume en caso
  * contrario no se consume ningún símbolo de la entrada.
- * 
+ *
  * EJEMPLO:
  *
  * bool is_pipe;
@@ -145,7 +141,7 @@ void parser_garbage(Parser parser, bool *garbage);
  *
  *
  * NOTA: Es la única función del TAD que consume un "\n"
- * 
+ *
  *
  * EJEMPLO:
  *
@@ -160,7 +156,7 @@ void parser_garbage(Parser parser, bool *garbage);
  *
  */
 
-char * parser_last_garbage(Parser parser);
+char *parser_last_garbage(Parser parser);
 /*
  * Devuelve una cadena con los símbolos leídos en la última llamada a
  * `parser_garbage()` en donde se haya encontrado basura. La cadena devuelta es
@@ -179,4 +175,3 @@ bool parser_at_eof(Parser parser);
  */
 
 #endif /* PARSER_H */
-

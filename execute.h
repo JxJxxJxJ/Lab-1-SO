@@ -7,7 +7,6 @@
 
 #include "command.h"
 
-
 void execute_pipeline(pipeline apipe);
 /*
  * Ejecuta un pipeline, identificando comandos internos, forkeando, y

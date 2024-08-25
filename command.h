@@ -29,7 +29,7 @@
  * agrega dos accesores/modificadores para redirección de entrada y salida.
  */
 
-typedef struct scommand_s * scommand;
+typedef struct scommand_s *scommand;
 
 scommand scommand_new(void);
 /*
@@ -50,7 +50,7 @@ scommand scommand_destroy(scommand self);
 
 /* Modificadores */
 
-void scommand_push_back(scommand self, char * argument);
+void scommand_push_back(scommand self, char *argument);
 /*
  * Agrega por detrás una cadena a la secuencia de cadenas.
  *   self: comando simple al cual agregarle la cadena.
@@ -66,8 +66,8 @@ void scommand_pop_front(scommand self);
  * Requires: self!=NULL && !scommand_is_empty(self)
  */
 
-void scommand_set_redir_in(scommand self, char * filename);
-void scommand_set_redir_out(scommand self, char * filename);
+void scommand_set_redir_in(scommand self, char *filename);
+void scommand_set_redir_out(scommand self, char *filename);
 /*
  * Define la redirección de entrada (salida).
  *   self: comando simple al cual establecer la redirección de entrada (salida).
@@ -96,7 +96,7 @@ unsigned int scommand_length(const scommand self);
  *
  */
 
-char * scommand_front(const scommand self);
+char *scommand_front(const scommand self);
 /*
  * Toma la cadena de adelante de la secuencia de cadenas.
  *   self: comando simple al cual tomarle la cadena del frente.
@@ -107,8 +107,8 @@ char * scommand_front(const scommand self);
  * Ensures: result!=NULL
  */
 
-char * scommand_get_redir_in(const scommand self);
-char * scommand_get_redir_out(const scommand self);
+char *scommand_get_redir_in(const scommand self);
+char *scommand_get_redir_out(const scommand self);
 /*
  * Obtiene los nombres de archivos a donde redirigir la entrada (salida).
  *   self: comando simple a decidir si está vacío.
@@ -117,7 +117,7 @@ char * scommand_get_redir_out(const scommand self);
  * Requires: self!=NULL
  */
 
-char * scommand_to_string(const scommand self);
+char *scommand_to_string(const scommand self);
 /* Preety printer para hacer debugging/logging.
  * Genera una representación del comando simple en un string (aka "serializar")
  *   self: comando simple a convertir.
@@ -129,7 +129,6 @@ char * scommand_to_string(const scommand self);
  *   scommand_get_redir_in(self)==NULL || scommand_get_redir_out(self)==NULL ||
  *   strlen(result)>0
  */
-
 
 /*
  * pipeline: tubería de comandos.
@@ -149,7 +148,7 @@ char * scommand_to_string(const scommand self);
  *           ------------------------------
  */
 
-typedef struct pipeline_s * pipeline;
+typedef struct pipeline_s *pipeline;
 
 pipeline pipeline_new(void);
 /*
@@ -234,14 +233,15 @@ bool pipeline_get_wait(const pipeline self);
  * Requires: self!=NULL
  */
 
-char * pipeline_to_string(const pipeline self);
+char *pipeline_to_string(const pipeline self);
 /* Pretty printer para hacer debugging/logging.
  * Genera una representación del pipeline en una cadena (aka "serializar").
  *   self: pipeline a convertir.
  *   Returns: una cadena con la representación del pipeline similar
  *     a lo que se escribe en un shell. Debe destruirla el llamador.
  * Requires: self!=NULL
- * Ensures: pipeline_is_empty(self) || pipeline_get_wait(self) || strlen(result)>0
+ * Ensures: pipeline_is_empty(self) || pipeline_get_wait(self) ||
+ * strlen(result)>0
  */
 
 #endif /* COMMAND_H */
