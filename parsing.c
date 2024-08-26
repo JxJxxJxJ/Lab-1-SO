@@ -7,6 +7,10 @@
 #include "parsing.h"
 
 static scommand parse_scommand(Parser p) {
+  // Requiero y ensuro lo mismo que en parse_pipeline (equivalente)
+  assert(p != NULL);
+  assert(!parser_at_eof(p));
+
   // Tomo un parser p y debo devolver un scommand
   // Step1: Creo un fucking scommand
   scommand sc = scommand_new(); // ALOCA MEMORIA
@@ -20,26 +24,36 @@ static scommand parse_scommand(Parser p) {
   // Parseo hasta el final del archivo
   while (!parser_at_eof(p)) { // TODO: Por alguna razon nunca se llega al eof
     argumento = parser_next_argument(p, &tipo_de_argumento);
-    if (argumento != NULL) {
-      if (tipo_de_argumento == ARG_NORMAL) {
-        scommand_push_back(sc, argumento);
-        printf("Metí un %s\n", argumento);
-      }
-      if (tipo_de_argumento == ARG_INPUT) {
-        scommand_set_redir_in(sc, argumento);
-        printf("Metí un %s\n", argumento);
-      }
-      if (tipo_de_argumento == ARG_OUTPUT) {
-        scommand_set_redir_out(sc, argumento);
-        printf("Metí un %s\n", argumento);
-      }
-    }
     if (argumento == NULL) {
-      printf("Fin del parseo, argumento == NULL\n");
-      printf("El scommand construido es: <%s>", scommand_to_string(sc));
-      return NULL; // TODO: Llego a argument == NULL antes que a eof
+      break;
     }
+    if (argumento != NULL) {
+      switch (tipo_de_argumento) {
+      case ARG_NORMAL:
+        scommand_push_back(sc, argumento);
+        break;
+      case ARG_INPUT:
+        scommand_set_redir_in(sc, argumento);
+        break;
+      case ARG_OUTPUT:
+        scommand_set_redir_out(sc, argumento);
+        break;
+      }
+    }
+    // Para debugear
+    printf("Metí un %s, de tipo %u\n", argumento, tipo_de_argumento);
+    printf("El scommand construido es: $ %s\n", scommand_to_string(sc));
+    parser_skip_blanks(p);
   }
+  // Ensuro lo siguiente
+  //  1- No se consumió más entrada de la necesaria
+  // assert(???);
+  //  2- El parser esta detenido justo luego de un \n o en el fin de archivo.
+  // assert(parser_at_eof(p));
+  //  3- Si lo que se consumió es un scommand valido, el resultado contiene la
+  //     estructura correspondiente.
+  // assert(???);
+  printf("He llegado a retornar el sc: $ %s\n", scommand_to_string(sc));
   return sc; // TODO: Nunca retorno el sc
 }
 

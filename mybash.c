@@ -21,9 +21,13 @@ int main(int argc, char *argv[]) {
   // | Zona para debugear, codigo temporal                   |
   // ---------------------------------------------------------
   show_prompt();
+  // Test de como parseo un scommand
   Parser parser = parser_new(stdin);
-  pipeline pipe = parse_pipeline(parser);
-  printf("El pipe parseado desde stdin es: \n %s\n", pipeline_to_string(pipe));
+  pipeline sc = parse_pipeline(parser);
+  pipeline_destroy(sc);
+
+  // Test de como parseo un pipeline
+  // ...
 
   // ---------------------------------------------------------
   // | Abajo esta el codigo que nos dieron                   |
