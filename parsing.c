@@ -8,56 +8,39 @@
 
 static scommand parse_scommand(Parser p) {
   // Tomo un parser p y debo devolver un scommand
-
   // Step1: Creo un fucking scommand
   scommand sc = scommand_new(); // ALOCA MEMORIA
 
+  // Step2:
   // Leo los argumentos uno por uno y los pongo donde haya que ponerlos
   // en el objeto scommand
   arg_kind_t tipo_de_argumento;
-  char *argumento;
+  char *argumento = NULL;
 
-  // Parseo hasta llegar a eof
-  while (!parser_at_eof(p)) {
+  // Parseo hasta el final del archivo
+  while (!parser_at_eof(p)) { // TODO: Por alguna razon nunca se llega al eof
     argumento = parser_next_argument(p, &tipo_de_argumento);
-    if (tipo_de_argumento == ARG_NORMAL) {
-      // Lo meto como argumento normal
-      scommand_push_back(sc, argumento);
-      printf("Meti un %s\n", argumento);
-    }
-    if (tipo_de_argumento == ARG_INPUT) {
-      // Lo meto como argumento de redir_input
-      scommand_set_redir_in(sc, argumento);
-      printf("Meti un %s\n", argumento);
-    }
-    if (tipo_de_argumento == ARG_OUTPUT) {
-      // Lo meto como argumento de redir_output
-      scommand_set_redir_out(sc, argumento);
-      printf("Meti un %s\n", argumento); // Para debug
+    if (argumento != NULL) {
+      if (tipo_de_argumento == ARG_NORMAL) {
+        scommand_push_back(sc, argumento);
+        printf("Metí un %s\n", argumento);
+      }
+      if (tipo_de_argumento == ARG_INPUT) {
+        scommand_set_redir_in(sc, argumento);
+        printf("Metí un %s\n", argumento);
+      }
+      if (tipo_de_argumento == ARG_OUTPUT) {
+        scommand_set_redir_out(sc, argumento);
+        printf("Metí un %s\n", argumento);
+      }
     }
     if (argumento == NULL) {
-      printf("Error al procesar argumento, argumento == NULL\n");
+      printf("Fin del parseo, argumento == NULL\n");
+      printf("El scommand construido es: <%s>", scommand_to_string(sc));
+      return NULL; // TODO: Llego a argument == NULL antes que a eof
     }
-    parser_skip_blanks(p);
   }
-  // Consumo el final de linea \n
-  // parser_garbage === se encontraron caracteres distintos a espacios en blanco
-  bool b;
-  parser_garbage(p, &b);
-  bool success = !b;
-
-  if (success) {
-    printf("Parseo exitoso. Se ha parseado el siguiente comando: \n %s",
-           scommand_to_string(sc));
-  } else { // !success
-    printf(
-        "Error de parseo. Se encontró el siguiente string con caracteres "
-        "distintos a espacios en blanco tras correr `parser_garbage`: \n%s\n",
-        parser_last_garbage(p));
-  }
-
-  // Devuelve NULL cuando hay un error de parseo
-  return success ? sc : NULL;
+  return sc; // TODO: Nunca retorno el sc
 }
 
 /*
@@ -108,8 +91,9 @@ pipeline parse_pipeline(Parser p) {
 
   // Ensures
   //    1- No se consumió más entrada de la necesaria
-  //    2- El parser esta detenido justo luego de un \n o en el fin de archivo.
-  //    3- Si lo que se consumió es un pipeline valido, el resultado contiene la
+  //    2- El parser esta detenido justo luego de un \n o en el fin de
+  //    archivo. 3- Si lo que se consumió es un pipeline valido, el resultado
+  //    contiene la
   //       estructura correspondiente.
   // TODO...
   // return NULL; // MODIFICAR
