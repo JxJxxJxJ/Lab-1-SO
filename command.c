@@ -7,7 +7,7 @@
 #include <string.h>
 
 /*
- * ZONA DE SCOMMAND
+ * ZONA DE SCOMMANDaskdjnsad
  */
 
 struct scommand_s {
