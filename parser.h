@@ -105,7 +105,6 @@ void parser_skip_blanks(Parser parser);
  * un tabulador ("\t").
  *
  * EJEMPLO:
- *
  * parser_skip_blanks(parser);
  *
  * REQUIRES:
@@ -141,7 +140,6 @@ void parser_garbage(Parser parser, bool *garbage);
  *
  *
  * NOTA: Es la única función del TAD que consume un "\n"
- *
  *
  * EJEMPLO:
  *

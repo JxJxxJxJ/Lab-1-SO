@@ -18,6 +18,7 @@ static scommand parse_scommand(Parser p) {
   // Step2:
   // Leo los argumentos uno por uno y los pongo donde haya que ponerlos
   // en el objeto scommand
+
   arg_kind_t tipo_de_argumento;
   char *argumento = NULL;
 
@@ -53,7 +54,7 @@ static scommand parse_scommand(Parser p) {
   //  3- Si lo que se consumió es un scommand valido, el resultado contiene la
   //     estructura correspondiente.
   // assert(???);
-  printf("He llegado a retornar el sc: $ %s\n", scommand_to_string(sc));
+  printf("He llegado a retornar el sc: $ <%s>\n", scommand_to_string(sc));
   return sc; // TODO: Nunca retorno el sc
 }
 

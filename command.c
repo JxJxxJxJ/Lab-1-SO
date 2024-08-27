@@ -12,8 +12,8 @@
 
 struct scommand_s {
   GQueue *argumentos;
-  char *redir_out;
   char *redir_in;
+  char *redir_out;
 };
 
 /*

@@ -23,8 +23,8 @@ int main(int argc, char *argv[]) {
   show_prompt();
   // Test de como parseo un scommand
   Parser parser = parser_new(stdin);
-  pipeline sc = parse_pipeline(parser);
-  pipeline_destroy(sc);
+  pipeline pl = parse_pipeline(parser);
+  pipeline_destroy(pl);
 
   // Test de como parseo un pipeline
   // ...
