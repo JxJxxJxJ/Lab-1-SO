@@ -6,6 +6,7 @@
 #include "parser.h"
 #include "parsing.h"
 
+//  Probando la rama 'modulo_parsing'
 static scommand parse_scommand(Parser p) {
   // Requiero y ensuro lo mismo que en parse_pipeline (equivalente)
   assert(p != NULL);
