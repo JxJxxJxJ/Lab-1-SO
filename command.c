@@ -7,7 +7,7 @@
 #include <string.h>
 
 /*
- * ZONA DE SCOMMAND tkjnsakjnsakjdnasdj
+ * ZONA DE SCOMMAND
  */
 
 struct scommand_s {
