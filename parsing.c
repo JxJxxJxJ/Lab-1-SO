@@ -6,7 +6,6 @@
 #include "parser.h"
 #include "parsing.h"
 
-//  Probando la rama 'modulo_parsing'
 static scommand parse_scommand(Parser p) {
   // Requiero y ensuro lo mismo que en parse_pipeline (equivalente)
   assert(p != NULL);
@@ -74,44 +73,56 @@ static scommand parse_scommand(Parser p) {
  *       estructura correspondiente.
  */
 pipeline parse_pipeline(Parser p) {
-  // Requieres:
+  // Precondiciones.
   assert(p != NULL);
   assert(!parser_at_eof(p));
 
+  // Inicialización de variables.
   pipeline result = pipeline_new();
   scommand cmd = NULL;
   bool error = false, another_pipe = true;
 
-  cmd = parse_scommand(p);
-  // Comando invalido al empezar
-  error = (cmd == NULL);
+  cmd = parse_scommand(p); 
+  error = (cmd == NULL); // Comando invalido al empezar.
+  
   while (another_pipe && !error) {
-    /*
-     * COMPLETAR
-     *
-     */
+    // Agrego el comando a la secuencia de la pipeline.
+    pipeline_push_back(result,cmd);   
+
+    // Verifico si existe una '|' en la entrada.
+    parser_op_pipe(p,&another_pipe);
+
+    // En caso de existir una '|', seteo cmd y error para parsear el siguiente comando simple. Si no, salgo del bucle.
+    if(another_pipe) {
+      cmd = parse_scommand(p);  // ¿Quizás sea necesario un 'parser_skip_blanks()' para saltar al siguiente comando?
+      error = (cmd == NULL)
+    }
+
+    // Usando como ejemplo ls -l -a < entrada.txt > salida.txt | wc -l
+    // 1° iteración: result = ( [ (["ls","-l","-a"], salida.txt , entrada.txt) ], ... )
+    // 2° iteración: result = ( [ (["ls","-l","-a"], salida.txt , entrada.txt) , (["wc","-l"], NULL , NULL) ], ... )
   }
-  // Opcionalmente un OP_BACKGROUND al final
 
-  // } // <-- Esto es un error de tipeo?
+  // Opcionalmente un OP_BACKGROUND al final.
+  // Verifica si la pipeline se ejecuta en primer o segundo plano.
+  bool in_background;
+  parser_op_background(p,&in_background);
+  pipeline_set_wait(result,!in_background);  
 
-  /*
-   *
-   * COMPLETAR
-   *
-   */
+  // result = ( [ (["ls","-l","-a"], salida.txt , entrada.txt) , (["wc","-l"], NULL , NULL) ], true )
 
-  // Tolerancia a espacios posteriores
-  // Consumir todo lo que hay inclusive el \n
-  // Si hubo error, hacemos cleanup
+  // Tolerancia a espacios posteriores.
+  parser_skip_blanks(p);
 
-  // Ensures
-  //    1- No se consumió más entrada de la necesaria
-  //    2- El parser esta detenido justo luego de un \n o en el fin de
-  //    archivo. 3- Si lo que se consumió es un pipeline valido, el resultado
-  //    contiene la
-  //       estructura correspondiente.
-  // TODO...
-  // return NULL; // MODIFICAR
+  // Consumir todo lo que hay inclusive el \n.
+  bool trash;
+  parser_garbage(p,&trash);
+
+  // Si hubo error, hacemos cleanup.
+  if(error) {
+    result = pipeline_destroy(result);
+    result = NULL;
+  }
+
   return result;
 }
