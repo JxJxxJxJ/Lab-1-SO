@@ -82,44 +82,49 @@ pipeline parse_pipeline(Parser p) {
   scommand cmd = NULL;
   bool error = false, another_pipe = true;
 
-  cmd = parse_scommand(p); 
+  cmd = parse_scommand(p);
   error = (cmd == NULL); // Comando invalido al empezar.
-  
+
   while (another_pipe && !error) {
     // Agrego el comando a la secuencia de la pipeline.
-    pipeline_push_back(result,cmd);   
+    pipeline_push_back(result, cmd);
 
     // Verifico si existe una '|' en la entrada.
-    parser_op_pipe(p,&another_pipe);
+    parser_op_pipe(p, &another_pipe);
 
-    // En caso de existir una '|', seteo cmd y error para parsear el siguiente comando simple. Si no, salgo del bucle.
-    if(another_pipe) {
-      cmd = parse_scommand(p);  // ¿Quizás sea necesario un 'parser_skip_blanks()' para saltar al siguiente comando?
-      error = (cmd == NULL)
+    // En caso de existir una '|', seteo cmd y error para parsear el siguiente
+    // comando simple. Si no, salgo del bucle.
+    if (another_pipe) {
+      cmd =
+          parse_scommand(p); // ¿Quizás sea necesario un 'parser_skip_blanks()'
+                             // para saltar al siguiente comando?
+      error = (cmd == NULL);
     }
 
     // Usando como ejemplo ls -l -a < entrada.txt > salida.txt | wc -l
-    // 1° iteración: result = ( [ (["ls","-l","-a"], salida.txt , entrada.txt) ], ... )
-    // 2° iteración: result = ( [ (["ls","-l","-a"], salida.txt , entrada.txt) , (["wc","-l"], NULL , NULL) ], ... )
+    // 1° iteración: result = ( [ (["ls","-l","-a"], salida.txt , entrada.txt)
+    // ], ... ) 2° iteración: result = ( [ (["ls","-l","-a"], salida.txt ,
+    // entrada.txt) , (["wc","-l"], NULL , NULL) ], ... )
   }
 
   // Opcionalmente un OP_BACKGROUND al final.
   // Verifica si la pipeline se ejecuta en primer o segundo plano.
   bool in_background;
-  parser_op_background(p,&in_background);
-  pipeline_set_wait(result,!in_background);  
+  parser_op_background(p, &in_background);
+  pipeline_set_wait(result, !in_background);
 
-  // result = ( [ (["ls","-l","-a"], salida.txt , entrada.txt) , (["wc","-l"], NULL , NULL) ], true )
+  // result = ( [ (["ls","-l","-a"], salida.txt , entrada.txt) , (["wc","-l"],
+  // NULL , NULL) ], true )
 
   // Tolerancia a espacios posteriores.
   parser_skip_blanks(p);
 
   // Consumir todo lo que hay inclusive el \n.
   bool trash;
-  parser_garbage(p,&trash);
+  parser_garbage(p, &trash);
 
   // Si hubo error, hacemos cleanup.
-  if(error) {
+  if (error) {
     result = pipeline_destroy(result);
     result = NULL;
   }
