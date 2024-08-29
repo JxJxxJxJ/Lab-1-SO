@@ -12,10 +12,8 @@ static scommand parse_scommand(Parser p) {
   assert(!parser_at_eof(p));
 
   // Tomo un parser p y debo devolver un scommand
-  // Step1: Creo un fucking scommand
   scommand sc = scommand_new(); // ALOCA MEMORIA
 
-  // Step2:
   // Leo los argumentos uno por uno y los pongo donde haya que ponerlos
   // en el objeto scommand
   arg_kind_t tipo_de_argumento;
@@ -40,9 +38,6 @@ static scommand parse_scommand(Parser p) {
         break;
       }
     }
-    // Para debugear
-    printf("Metí un %s, de tipo %u\n", argumento, tipo_de_argumento);
-    printf("El scommand construido es: $ %s\n", scommand_to_string(sc));
     parser_skip_blanks(p);
   }
   // Ensuro lo siguiente
@@ -53,8 +48,7 @@ static scommand parse_scommand(Parser p) {
   //  3- Si lo que se consumió es un scommand valido, el resultado contiene la
   //     estructura correspondiente.
   // assert(???);
-  printf("He llegado a retornar el sc: $ %s\n", scommand_to_string(sc));
-  return sc; // TODO: Nunca retorno el sc
+  return sc;
 }
 
 /*
@@ -72,44 +66,46 @@ static scommand parse_scommand(Parser p) {
  *       estructura correspondiente.
  */
 pipeline parse_pipeline(Parser p) {
-  // Requieres:
+  // Precondiciones.
   assert(p != NULL);
   assert(!parser_at_eof(p));
 
+  // Inicialización de variables.
   pipeline result = pipeline_new();
   scommand cmd = NULL;
   bool error = false, another_pipe = true;
-
   cmd = parse_scommand(p);
-  // Comando invalido al empezar
-  error = (cmd == NULL);
-  while (another_pipe && !error) {
-    /*
-     * COMPLETAR
-     *
-     */
+  error = (cmd == NULL); // Comando invalido al empezar.
+  if (another_pipe && error) {
+    printf("Error: no input or output file.\n");
+    pipeline_destroy(result);
+    return NULL;
   }
-  // Opcionalmente un OP_BACKGROUND al final
+  while (another_pipe && !error) {
+    pipeline_push_back(result, cmd);
+    parser_op_pipe(p, &another_pipe);
+    if (another_pipe) {
+      cmd = parse_scommand(p);
+      error = (cmd == NULL);
+    }
+  }
+  bool in_background;
+  parser_op_background(p, &in_background);
+  pipeline_set_wait(result, !in_background);
+  bool trash;
+  parser_garbage(p, &trash);
 
-  // } // <-- Esto es un error de tipeo?
+  if (error) {
+    result = pipeline_destroy(result);
+    result = NULL;
+  }
 
-  /*
-   *
-   * COMPLETAR
-   *
-   */
+  // ...
+  if (pipeline_length(result) == 1 &&
+      scommand_length(pipeline_front(result)) == 0) {
+    pipeline_destroy(result);
+    result = NULL;
+  }
 
-  // Tolerancia a espacios posteriores
-  // Consumir todo lo que hay inclusive el \n
-  // Si hubo error, hacemos cleanup
-
-  // Ensures
-  //    1- No se consumió más entrada de la necesaria
-  //    2- El parser esta detenido justo luego de un \n o en el fin de
-  //    archivo. 3- Si lo que se consumió es un pipeline valido, el resultado
-  //    contiene la
-  //       estructura correspondiente.
-  // TODO...
-  // return NULL; // MODIFICAR
   return result;
 }
