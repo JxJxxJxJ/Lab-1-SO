@@ -59,28 +59,6 @@ bool builtin_is_internal(scommand cmd) {
   return b;
 }
 
-// static builtin_is_internal_con_strcmp(scommand sc) {
-//   bool builtin_is_internal(scommand * cmd) {
-//     assert(cmd != NULL);
-//     bool b = false;
-
-//     // Tomo lo que el scommand tenia al frente (el ls, el wc, etc sin sus
-//     flags)
-//     // y armo un string con eso
-//     const char *command_name = scommand_front(cmd);
-
-//     // Recorre la tabla de comandos, si encuentro uno que se llame igual
-//     // devuelvo true
-//     for (size_t i = 0; i < CMD_COUNT; ++i) {
-//       if (strcmp(command_name, command_table[i].name) == 0) {
-//         b = true;
-//       }
-//     }
-
-//     return b;
-//   }
-// }
-
 /*
  * Indica si el pipeline tiene solo un elemento y si este se corresponde a un
  * comando interno.
