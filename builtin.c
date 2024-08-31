@@ -38,7 +38,6 @@ static CMD_ENTRY command_table[CMD_COUNT] = {
  */
 bool builtin_is_internal(scommand cmd) {
   assert(cmd != NULL);
-  bool b = false;
 
   // Tomo lo que el scommand tenia al frente (el ls, el wc, etc sin sus flags)
   // y armo un gstring con eso
@@ -46,14 +45,15 @@ bool builtin_is_internal(scommand cmd) {
 
   // Recorre la tabla de comandos, si encuentro uno que se llame igual devuelvo
   // true
-  for (size_t i = 0; i < CMD_COUNT; ++i) {
+  bool b_found = false;
+  for (size_t i = 0; i < CMD_COUNT && !b_found; ++i) {
     GString *gstr_command_table_name = g_string_new(command_table[i].name);
     if (g_string_equal(gstr_scommand, gstr_command_table_name)) {
-      b = true;
+      b_found = true;
     }
   }
 
-  return b;
+  return b_found;
 }
 
 /*
@@ -83,13 +83,13 @@ void builtin_run(scommand cmd) {
   // Obtengo el nombre del comando
   GString *gstr_scommand = g_string_new(scommand_front(cmd));
   // Busco el nombre en la tabla de comandos
-  bool done = false;
-  for (size_t i = 0; i < CMD_COUNT && !done; ++i) {
+  bool b_found = false;
+  for (size_t i = 0; i < CMD_COUNT && !b_found; ++i) {
     GString *gstr_command_table_name = g_string_new(command_table[i].name);
     if (g_string_equal(gstr_scommand, gstr_command_table_name)) {
       // Ejecuta la funcion del comando con el scomando cmd
       command_table[i].handler(cmd);
-      done = true;
+      b_found = true;
     }
   }
 }
