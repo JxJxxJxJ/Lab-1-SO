@@ -58,26 +58,27 @@ bool builtin_is_internal(scommand cmd) {
   return b;
 }
 
-static builtin_is_internal_con_strcmp(scommand sc) {
-  bool builtin_is_internal(scommand * cmd) {
-    assert(cmd != NULL);
-    bool b = false;
+// static builtin_is_internal_con_strcmp(scommand sc) {
+//   bool builtin_is_internal(scommand * cmd) {
+//     assert(cmd != NULL);
+//     bool b = false;
 
-    // Tomo lo que el scommand tenia al frente (el ls, el wc, etc sin sus flags)
-    // y armo un string con eso
-    const char *command_name = scommand_front(cmd);
+//     // Tomo lo que el scommand tenia al frente (el ls, el wc, etc sin sus
+//     flags)
+//     // y armo un string con eso
+//     const char *command_name = scommand_front(cmd);
 
-    // Recorre la tabla de comandos, si encuentro uno que se llame igual
-    // devuelvo true
-    for (size_t i = 0; i < CMD_COUNT; ++i) {
-      if (strcmp(command_name, command_table[i].name) == 0) {
-        b = true;
-      }
-    }
+//     // Recorre la tabla de comandos, si encuentro uno que se llame igual
+//     // devuelvo true
+//     for (size_t i = 0; i < CMD_COUNT; ++i) {
+//       if (strcmp(command_name, command_table[i].name) == 0) {
+//         b = true;
+//       }
+//     }
 
-    return b;
-  }
-}
+//     return b;
+//   }
+// }
 
 /*
  * Indica si el pipeline tiene solo un elemento y si este se corresponde a un
@@ -86,15 +87,12 @@ static builtin_is_internal_con_strcmp(scommand sc) {
  * REQUIRES: p != NULL
  *
  * ENSURES:
- *
  * builtin_alone(p) == pipeline_length(p) == 1 &&
  *                     builtin_is_internal(pipeline_front(p))
- *
- *
  */
 bool builtin_alone(pipeline p) {
-  bool b = false;
-
+  assert(p != NULL);
+  bool b = pipeline_length(p) == 1 && builtin_is_internal(pipeline_front(p));
   return b;
 }
 
