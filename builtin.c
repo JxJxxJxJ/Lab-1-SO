@@ -5,6 +5,7 @@
 #include <stdbool.h>
 #include <stdio.h>
 #include <stdlib.h>
+#include <string.h>
 
 // Enum de los comandos que mybash acepta
 // CMD_COUNT es la cantidad de comandos aceptados hasta ahora por la shell
@@ -102,4 +103,18 @@ bool builtin_alone(pipeline p) {
  * REQUIRES: {builtin_is_internal(cmd)}
  *
  */
-void builtin_run(scommand cmd) {}
+void builtin_run(scommand cmd) {
+  assert(builtin_is_internal(cmd));
+  // Obtengo el nombre del comando
+  GString *gstr_scommand = g_string_new(scommand_front(cmd));
+  // Busco el nombre en la tabla de comandos
+  bool done = false;
+  for (size_t i = 0; i < CMD_COUNT && !done; ++i) {
+    GString *gstr_command_table_name = g_string_new(command_table[i].name);
+    if (g_string_equal(gstr_scommand, gstr_command_table_name)) {
+      // Ejecuta la funcion del comando con el scomando cmd
+      command_table[i].handler(cmd);
+      done = true;
+    }
+  }
+}
