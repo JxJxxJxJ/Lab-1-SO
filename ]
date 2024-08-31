@@ -1,0 +1,74 @@
+#include "builtin.h"
+#include "command.h"
+#include <assert.h>
+#include <glib.h>
+#include <stdbool.h>
+#include <stdio.h>
+#include <stdlib.h>
+
+// Enum de los comandos que mybash acepta
+// CMD_COUNT es la cantidad de comandos aceptado por la shell
+typedef enum { CMD_CD, CMD_HELP, CMD_EXIT, CMD_COUNT } Command;
+
+static void handle_cd() { printf("Estoy ejecutando cd"); }
+static void handle_help() { printf("Estoy ejecutando help"); }
+static void handle_exit() { printf("Estoy ejecutando exit"); }
+
+// Cada comando <comando> tendra una funcion void asociada <handle_comando>
+typedef struct {
+  const char *name;
+  void (*handler)();
+} CMD_ENTRY;
+
+// Una tabla (array) de CMD_ENTRY
+static CMD_ENTRY command_array[CMD_EXIT] = {
+    {"cd", handle_cd}, {"help", handle_help}, {"exit", handle_exit}};
+
+/*
+ * Indica si el comando alojado en `cmd` es un comando interno
+ *
+ * REQUIRES: cmd != NULL
+ *
+ */
+bool builtin_is_internal(scommand cmd) {
+  assert(cmd != NULL);
+  bool b = false;
+
+  // Tomo lo que el scommand tenia al frente (el ls, el wc, etc sin sus flags)
+  // y armo un gstring con eso
+  GString gstr_scommand = g_string_new(scommand_front(cmd));
+
+  // Variables (strings) para comandos internos
+  GString gstr_cd = "cd";
+  GString gstr_help = "help";
+  GString gstr_ = "cd";
+
+  switch (g_string_equal(gstr_command,"sc") {
+
+  }
+
+  return b;
+}
+
+/*
+ * Indica si el pipeline tiene solo un elemento y si este se corresponde a un
+ * comando interno.
+ *
+ * REQUIRES: p != NULL
+ *
+ * ENSURES:
+ *
+ * builtin_alone(p) == pipeline_length(p) == 1 &&
+ *                     builtin_is_internal(pipeline_front(p))
+ *
+ *
+ */
+bool builtin_alone(pipeline p) {}
+
+/*
+ * Ejecuta un comando interno
+ *
+ * REQUIRES: {builtin_is_internal(cmd)}
+ *
+ */
+void builtin_run(scommand cmd) {}
