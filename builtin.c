@@ -47,9 +47,6 @@ bool builtin_is_internal(scommand cmd) {
   // Recorre la tabla de comandos, si encuentro uno que se llame igual devuelvo
   // true
   for (size_t i = 0; i < CMD_COUNT; ++i) {
-    // Podria comparar con strcmp, quiza lo mas minimalista sea mejor, pero
-    // mezclar glib.h con strings.h me da cosa
-    // con gstring debo convertir el .name del campo a un gstring primero
     GString *gstr_command_table_name = g_string_new(command_table[i].name);
     if (g_string_equal(gstr_scommand, gstr_command_table_name)) {
       b = true;
