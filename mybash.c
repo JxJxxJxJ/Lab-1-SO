@@ -11,10 +11,6 @@
 #include <stdlib.h>
 
 static void show_prompt(void) {
-  // Obtén el nombre del usuario y el nombre del host usando GLib
-  // const gchar *usr = g_get_user_name();
-  // const gchar *machine = g_get_host_name();
-
   // Para printear username
   print_colored("╭─", NEGRO2FG, NULL);
   print_colored("", VERDE2FG, NEGRO2BG);
@@ -27,7 +23,7 @@ static void show_prompt(void) {
   print_colored(g_get_current_dir(), BLANCOFG, NEGRO2BG);
   print_colored("", NEGRO2FG, NEGRO2BG);
   // Para printear icono de directorio
-  print_colored("", AZULFG, NULL);
+  print_colored("", AZULFG, NEGRO2BG);
   print_colored("", NEGROFG, AZULBG);
   print_colored("", AZULFG, NULL);
   // Salto de linea
@@ -49,8 +45,6 @@ int main(int argc, char *argv[]) {
     Parser parser = parser_new(stdin);
     scommand sc = parse_scommand(parser);
     builtin_run(sc);
-    char *currentDirectory = (char *)g_get_current_dir();
-    printf("%s\n", currentDirectory);
     scommand_destroy(sc);
   }
   // ---------------------------------------------------------
