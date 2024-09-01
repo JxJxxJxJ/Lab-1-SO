@@ -12,13 +12,41 @@
 // CMD_COUNT es la cantidad de comandos aceptados hasta ahora por la shell
 typedef enum { CMD_CD, CMD_HELP, CMD_EXIT, CMD_COUNT } Command;
 
-static void handle_cd(scommand sc) { printf("Estoy ejecutando cd\n"); 
-  
-  chdir("/home/gaspar-saenz-valiente/Descargas");
+static void handle_cd(scommand sc) {
+    // Planteo dos casos: uno en el que solo se coloca el cd sin dirección y otro donde se 
+    // le da una dirección específica.
 
+    // Si el tamaño del scommand es 1, significa que se trata del cd solo sin dirección.
+    if(scommand_length(sc) == 1) {
+        chdir(getenv("HOME"));  // La variable 'HOME' está configurada para apuntar al directorio
+                                // personal del usuario actual, entonces getenv accede al valor de
+                                // dicha variable y me transporta a esa dirección.
+    }
+    else {  // Si el tamaño del scommand es != 1, significa que el cd viene acompañado de una dirección.
+        scommand_pop_front(sc);   // Popeo el cd para quedarme solamente con la dirección.
+        char *path = scommand_to_string(sc);   // Guardo la dirección en la variable path.
+        int k = chdir(path);    // Intento llegar a la dirección con chdir (caso exitoso cuando k == 0).
+
+        // Si k == -1, entonces no se puede acceder a la ruta entregada. 
+        if(k == -1) {
+            printf("myBash: cd: %s: El archivo o directorio no existe.\n", path);
+        }
+    }
 }
-static void handle_help(scommand sc) { printf("Estoy ejecutando help\n"); }
-static void handle_exit(scommand sc) { printf("Estoy ejecutando exit\n"); }
+
+static void handle_help(scommand sc) { 
+    printf("«myBash» v1.0, por :(){ :|:& };: (g-01)\n\n");
+    printf("Los autores que colaboraron para la creación del mismo son: \n- Juan Cruz Hermosilla Artico\n- Gaspar Saenz Valiente\n- Exequiel Trinidad\n- Fernando Cabrera Luque\n\n");
+    printf("Los comandos internos de este bash son:\n");
+    printf("'cd <path>' permite desplazarse entre los directorios del sistema.\n");
+    printf("'help' muestra los comandos internos del bash e información del mismo (¡USTED ESTÁ AQUÍ!).\n");
+    printf("'exit' cierra el bash actual.\n");
+}
+
+static void handle_exit(scommand sc) { 
+    printf("¡Adiós!\n");
+    exit(EXIT_SUCCESS); 
+}
 
 // Cada comando <comando> tendra una funcion void asociada <handle_comando> y
 // una descripcion de lo que hace en help
@@ -101,7 +129,7 @@ bool builtin_is_internal(scommand cmd) {
         char *name_pointer = (char *)g_queue_peek_nth(gq_command_table, i);
         if (strcmp(name_pointer, str_scommand) == 0) {
             found = true;
-            printf("El comando es interno. Indx es: %d\n Se leyó generado es: %s\n", i, scommand_to_string(cmd));
+            // printf("El comando es interno. Indx es: %d\n Se leyó generado es: %s\n", i, scommand_to_string(cmd));
         }
     }
 
@@ -142,7 +170,7 @@ void builtin_run(scommand cmd) {
     
     // Obtengo el nombre del comando
     char *str_scommand = scommand_front(cmd);
-    printf("El comando leído por builtin run es: %s \n", str_scommand);
+    // printf("El comando leído por builtin run es: %s \n", str_scommand);
 
     // Busco manualmente en la GQueue str_scommand
     int indx = -1;
@@ -160,8 +188,7 @@ void builtin_run(scommand cmd) {
         commands_registry[indx].data.handler(cmd);
     }
 
-
-    printf("El indx devuelto es: %d\n", indx);
+    // printf("El indx devuelto es: %d\n", indx);
 
     g_queue_free_full(gq_command_table, free);
 }
