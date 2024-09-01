@@ -71,13 +71,13 @@ static void handle_exit(scommand sc) {
 // Todo comando debera tener una funcion que se encargue de ejecutar la tarea
 // del comando y una descripcion obtenible al hacer <comando> --help
 typedef struct {
-  void (*handler)(scommand); // Nombre del comando
-  const char *help;          // Data del comando
-} CMD_DATA;
-
-typedef struct {
-  const char *name;
-  const CMD_DATA data;
+  void (*handler)(scommand); // Funcion que maneja el comando
+  const char *help;          // Descripcion del comando
+} CMD_DATA;                  //
+                             //
+typedef struct {             //
+  const char *name;          // Nombre del comando
+  const CMD_DATA data;       // Data del comando
 } CMD_ENTRY;
 
 // Un arreglo global de CMD_ENTRY.
