@@ -18,13 +18,23 @@ static void show_prompt(void) {
 int main(int argc, char *argv[]) {
 
   // ---------------------------------------------------------
-  // | Zona para debugear, codigo temporal                   |
+  // | Zona para debugear builtin codigo temporal                   |
   // ---------------------------------------------------------
   show_prompt();
   // Test de como parseo un scommand
   Parser parser = parser_new(stdin);
-  pipeline pl = parse_pipeline(parser);
-  pipeline_destroy(pl);
+  scommand sc = parse_scommand(parser);
+  builtin_run(sc);
+  scommand_destroy(sc);
+
+  // ---------------------------------------------------------
+  // | Zona para debugear, codigo temporal                   |
+  // ---------------------------------------------------------
+  // show_prompt();
+  // // Test de como parseo un scommand
+  // Parser parser = parser_new(stdin);
+  // pipeline pl = parse_pipeline(parser);
+  // pipeline_destroy(pl);
 
   // Test de como parseo un pipeline
   // ...
