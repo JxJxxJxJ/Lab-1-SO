@@ -1,7 +1,7 @@
 #include <stdbool.h>
 #include <stdio.h>
 #include <stdlib.h>
-
+#include <glib.h>
 #include "builtin.h"
 #include "command.h"
 #include "execute.h"
@@ -20,13 +20,16 @@ int main(int argc, char *argv[]) {
   // ---------------------------------------------------------
   // | Zona para debugear builtin codigo temporal                   |
   // ---------------------------------------------------------
+  while(true){
   show_prompt();
   // Test de como parseo un scommand
   Parser parser = parser_new(stdin);
   scommand sc = parse_scommand(parser);
   builtin_run(sc);
+  char* currentDirectory= (char*)g_get_current_dir();
+  printf("%s\n",currentDirectory);
   scommand_destroy(sc);
-
+  }
   // ---------------------------------------------------------
   // | Zona para debugear, codigo temporal                   |
   // ---------------------------------------------------------
