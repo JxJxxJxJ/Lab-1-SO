@@ -6,7 +6,8 @@
 #include "parser.h"
 #include "parsing.h"
 
-static scommand parse_scommand(Parser p) {
+// TEMPORAL
+/* static */ scommand parse_scommand(Parser p) {
   // Requiero y ensuro lo mismo que en parse_pipeline (equivalente)
   assert(p != NULL);
   assert(!parser_at_eof(p));

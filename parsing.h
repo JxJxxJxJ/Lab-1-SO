@@ -20,4 +20,7 @@ pipeline parse_pipeline(Parser parser);
  *     estructura correspondiente.
  */
 
+// TEMPORAL
+scommand parse_scommand(Parser parser);
+
 #endif

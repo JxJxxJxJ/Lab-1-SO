@@ -1,30 +1,60 @@
+#include "builtin.h"
+#include "command.h"
+#include "execute.h"
+#include "obfuscated.h"
+#include "parser.h"
+#include "parsing.h"
+#include "prompt.h"
+#include <glib.h>
 #include <stdbool.h>
 #include <stdio.h>
 #include <stdlib.h>
 
-#include "builtin.h"
-#include "command.h"
-#include "execute.h"
-#include "parser.h"
-#include "parsing.h"
-
-#include "obfuscated.h"
-
 static void show_prompt(void) {
-  printf("mybash> ");
+  // Para printear username
+  print_colored("╭─", NEGRO2FG, NULL);
+  print_colored("", VERDE2FG, NEGRO2BG);
+  print_colored(g_get_user_name(), NEGROFG, VERDE2BG);
+  print_colored("", VERDE2FG, NULL);
+  print_colored(" ", NEGROFG, NULL);
+  print_colored(" ", NEGROFG, NULL);
+  // Para printear working directory
+  print_colored("", NEGRO2FG, NULL);
+  print_colored(g_get_current_dir(), BLANCOFG, NEGRO2BG);
+  print_colored("", NEGRO2FG, NEGRO2BG);
+  // Para printear icono de directorio
+  print_colored("", AZULFG, NEGRO2BG);
+  print_colored("", NEGROFG, AZULBG);
+  print_colored("", AZULFG, NULL);
+  // Salto de linea
+  print_colored("\n", AZULFG, NULL);
+  print_colored("╰─", NEGRO2FG, NULL);
+  print_colored("", VERDE2FG, NULL);
+  print_colored(" ", RESET_COLOR, RESET_COLOR);
   fflush(stdout);
 }
 
 int main(int argc, char *argv[]) {
 
   // ---------------------------------------------------------
+  // | Zona para debugear builtin codigo temporal                   |
+  // ---------------------------------------------------------
+  while (true) {
+    show_prompt();
+    // Test de como parseo un scommand
+    Parser parser = parser_new(stdin);
+    scommand sc = parse_scommand(parser);
+    builtin_run(sc);
+    scommand_destroy(sc);
+  }
+  // ---------------------------------------------------------
   // | Zona para debugear, codigo temporal                   |
   // ---------------------------------------------------------
-  show_prompt();
-  // Test de como parseo un scommand
-  Parser parser = parser_new(stdin);
-  pipeline pl = parse_pipeline(parser);
-  pipeline_destroy(pl);
+  // show_prompt();
+  // // Test de como parseo un scommand
+  // Parser parser = parser_new(stdin);
+  // pipeline pl = parse_pipeline(parser);
+  // pipeline_destroy(pl);
 
   // Test de como parseo un pipeline
   // ...
