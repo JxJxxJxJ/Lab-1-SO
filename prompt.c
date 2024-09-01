@@ -8,6 +8,6 @@ void print_colored(const char *text, const char *fg_color,
   if (bg_color) {
     printf("%s%s%s%s%s", BOLD, fg_color, bg_color, text, RESET_COLOR);
   } else {
-    printf("%s%s%s", BOLD, fg_color, text);
+    printf("%s%s%s%s", BOLD, fg_color, text, RESET_COLOR);
   }
 }

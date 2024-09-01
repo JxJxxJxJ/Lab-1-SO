@@ -28,7 +28,7 @@
 #define GRISFG "\033[38;5;145m"     // Foreground color -> RGB C0C0C0
 #define BLANCOFG "\033[38;5;255m"   //
 #define BLANCOBG "\033[48;5;255m"   //
-#define RESET_COLOR "\033[0m"       // Reset to default colors
+#define RESET_COLOR "\033[0m"       // Texto default
 #define BOLD "\033[1m"              // Texto boldo
 
 // Para poder imprimir <text> con el fg y bg color correspondientes
