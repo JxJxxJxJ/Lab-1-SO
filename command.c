@@ -76,8 +76,13 @@ void scommand_push_back(scommand self, char *argument) {
  */
 void scommand_pop_front(scommand self) {
   assert(self != NULL && !scommand_is_empty(self));
+  // Obtengo el elemento del front
+  char *front_item = g_queue_peek_head(self->argumentos);
+  // Lo saco de la gqueue
   gboolean b =
       g_queue_remove(self->argumentos, g_queue_peek_head(self->argumentos));
+  // Lo libero
+  free(front_item);
   assert(b);
 }
 
@@ -90,10 +95,16 @@ void scommand_pop_front(scommand self) {
  */
 void scommand_set_redir_in(scommand self, char *filename) {
   assert(self != NULL);
+  // Libero por las dudas, porque si ya habia algo entonces no lo estoy
+  // liberando
+  free(self->redir_in);
   self->redir_in = filename;
 }
 void scommand_set_redir_out(scommand self, char *filename) {
   assert(self != NULL);
+  // Libero por las dudas, porque si ya habia algo entonces no lo estoy
+  // liberando
+  free(self->redir_out);
   self->redir_out = filename;
 }
 
