@@ -68,7 +68,7 @@ void execute_pipeline(pipeline apipe) {
         int pl_length = pipeline_length(apipe);
 
 
-        // file descriptors y temporales, para conectar las salidas con las
+        // file descriptors para conectar las salidas con las
         // entradas.
         int fd_actual[2];
         int fd_anterior[2];
@@ -77,7 +77,7 @@ void execute_pipeline(pipeline apipe) {
         for (int i = 0; i < pl_length; i++) {
 
           if (i > 0) {
-              // guardo los file descriptors del proceso en temp para luego
+              // guardo los file descriptors del proceso anterior para luego
               // reconectarlos con el siguiente proceso (no lo hago si soy el primer
               // proceso)
               fd_anterior[0] = fd_actual[0];
@@ -85,7 +85,7 @@ void execute_pipeline(pipeline apipe) {
           }
 
           if (i < pl_length - 1) {
-              pipe(fds);
+              pipe(fd_actual);
           }
 
           int pid = fork();
