@@ -26,7 +26,7 @@ const int MAX_WALLISFUTUNA = 1024;
 const int MAX_VIETNAM = 50;
 
 // SO_USER era VENEZUELA
-const char *SO_USER = "Gaspar Saenz Valiente";
+const char *SO_USER = "jcruzartico";
 
 // SO_GROUP era VATICANCITY
 char SO_GROUP[20] = "so24lab1g01";
