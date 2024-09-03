@@ -10,7 +10,6 @@
 #include <sys/wait.h>
 #include <fcntl.h>
 
-//Cambio los comentarios a español para que se entiendan mejor
 
 static void execute_scommand(scommand sc){
     char *redirIN =  scommand_get_redir_in(sc);
