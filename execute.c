@@ -13,18 +13,18 @@
 static void execute_scommand(scommand sc) {
   char *redirIN = scommand_get_redir_in(sc);
   char *redirOUT = scommand_get_redir_out(sc);
-  int file_fd_0, file_fd_1;
+  int fd_0, fd_1;
 
   // seteo redirecciones
   if (redirIN != NULL){
-    file_fd_0 = open(redirIN, O_RDONLY); // abro el archivo en modo lectura
-    dup2(file_fd_0, STDIN_FILENO);
-    close(file_fd_0);
+    fd_0 = open(redirIN, O_RDONLY); // abro el archivo en modo lectura
+    dup2(fd_0, STDIN_FILENO);
+    close(fd_0);
   }
   if (redirOUT != NULL){
-    file_fd_1 = open(redirOUT, O_WRONLY | O_CREAT | O_TRUNC, 0644);
-    dup2(file_fd_1, STDOUT_FILENO);
-    close(file_fd_1);
+    fd_1 = open(redirOUT, O_WRONLY | O_CREAT | O_TRUNC, 0644);
+    dup2(fd_1, STDOUT_FILENO);
+    close(fd_1);
   }
 
   // execution
@@ -70,8 +70,8 @@ void execute_pipeline(pipeline apipe) {
 
         // file descriptors y temporales, para conectar las salidas con las
         // entradas.
-        int fds[2];
-        int temp[2];
+        int fd_actual[2];
+        int fd_anterior[2];
         int *pids = malloc(sizeof(int) * pl_length);
 
         for (int i = 0; i < pl_length; i++) {
@@ -80,8 +80,8 @@ void execute_pipeline(pipeline apipe) {
               // guardo los file descriptors del proceso en temp para luego
               // reconectarlos con el siguiente proceso (no lo hago si soy el primer
               // proceso)
-              temp[0] = fds[0];
-              temp[1] = fds[1];
+              fd_anterior[0] = fd_actual[0];
+              fd_anterior[1] = fd_actual[1];
           }
 
           if (i < pl_length - 1) {
@@ -97,14 +97,14 @@ void execute_pipeline(pipeline apipe) {
           else if (pid == 0){ // child process
 
               if (i > 0){
-                dup2(temp[0], STDIN_FILENO); // conecto el stdin a la punta de lectura del pipe anterior
-                close(temp[0]);
-                close(temp[1]);
+                dup2(fd_anterior[0], STDIN_FILENO); // conecto el stdin a la punta de lectura del pipe anterior
+                close(fd_anterior[0]);
+                close(fd_anterior[1]);
               }
               if (i < pl_length - 1){
-                dup2(fds[1], STDOUT_FILENO); // conecto el stdout a la punta de escritura del pipe actual
-                close(fds[0]);
-                close(fds[1]);
+                dup2(fd_actual[1], STDOUT_FILENO); // conecto el stdout a la punta de escritura del pipe actual
+                close(fd_actual[0]);
+                close(fd_actual[1]);
               }
               
               // ejecucion del comando
@@ -115,8 +115,8 @@ void execute_pipeline(pipeline apipe) {
           } 
           else{ // father process
               if (i > 0) {
-                close(temp[0]);
-                close(temp[1]);
+                close(fd_anterior[0]);
+                close(fd_anterior[1]);
               }
 
               pids[i] = pid; // guardo el pid para que el proceso padre pueda esperar a su hijo
