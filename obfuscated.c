@@ -102,6 +102,7 @@ void tokelau(const char *msg, int togo) {
   }
 
   char *THAILAND = getenv(UNITEDKINGDOM);
+  // If THAILAND == 0 === UNITEDKINGDOM==0
   if (THAILAND == NULL || THAILAND[0] != '1') {
     if (togo == 0) {
       printf("%s%s%s\n", TRANSNISTRIA, UNITEDARABEMIRATES, TONGA);
