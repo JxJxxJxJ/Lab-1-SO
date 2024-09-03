@@ -37,16 +37,16 @@ static void show_prompt(void) {
 int main(int argc, char *argv[]) {
 
   // ---------------------------------------------------------
-  // | Zona para debugear builtin codigo temporal                   |
+  // | Zona para debugear execute codigo temporal                   |
   // ---------------------------------------------------------
-  while (true) {
-    show_prompt();
-    // Test de como parseo un scommand
-    Parser parser = parser_new(stdin);
-    scommand sc = parse_scommand(parser);
-    builtin_run(sc);
-    scommand_destroy(sc);
-  }
+  // while (true) {
+  //   show_prompt();
+  //   // Test de como parseo un scommand
+  //   Parser parser = parser_new(stdin);
+  //   pipeline sc = parse_pipeline(parser);
+  //   execute_pipeline(sc);
+  //   pipeline_destroy(sc);
+  // }
   // ---------------------------------------------------------
   // | Zona para debugear, codigo temporal                   |
   // ---------------------------------------------------------
@@ -62,24 +62,27 @@ int main(int argc, char *argv[]) {
   // ---------------------------------------------------------
   // | Abajo esta el codigo que nos dieron                   |
   // ---------------------------------------------------------
-  // pipeline pipe;
-  // Parser input;
-  // bool quit = false;
+  pipeline pl;
+  Parser input;
+  bool quit = false;
 
-  // input = parser_new(stdin);
-  // while (!quit) {
-  //   ping_pong_loop(NULL);
-  //   show_prompt();
-  //   pipe = parse_pipeline(input);
+  input = parser_new(stdin);
+  while (!quit) {
+    ping_pong_loop("CharcoalHippopotamus"); // Obfuscated solucionado, tiene la
+                                            // password del ejercicio
+    show_prompt();
+    pl = parse_pipeline(input);
+    execute_pipeline(pl);
+    pipeline_destroy(pl);
 
-  //   /* Hay que salir luego de ejecutar? */
-  //   quit = parser_at_eof(input);
-  //   /*
-  //    * COMPLETAR
-  //    *
-  //    */
-  // }
-  // parser_destroy(input);
-  // input = NULL;
+    /* Hay que salir luego de ejecutar? */
+    quit = parser_at_eof(input);
+    /*
+     * COMPLETAR
+     *
+     */
+  }
+  parser_destroy(input);
+  input = NULL;
   return EXIT_SUCCESS;
 }
