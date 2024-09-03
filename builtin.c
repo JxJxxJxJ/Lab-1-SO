@@ -145,9 +145,11 @@ bool builtin_is_internal(scommand cmd) {
     }
   }
 
-  if (!found) {
-    printf("%s: no se encontró la orden\n", str_scommand);
-  }
+  // if (!found) { // No hace falta imprimirlo. Si no es builtin puede ser
+  // binary
+  //   printf("%s: no se encontró la orden\n", str_scommand);
+  // }
+
   // Destruyo la gq_command_table con la funcion para liberar cada elemento (son
   // strings, los libero con free)
   g_queue_free_full(gq_command_table, free);
