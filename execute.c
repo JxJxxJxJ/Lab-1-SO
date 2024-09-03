@@ -38,11 +38,10 @@ static void execute_scommand(scommand sc){
 
 
     unsigned int sc_length = scommand_length(sc);
-    char **argvs == malloc((sc_length+1) * sizeof(char*)); // +1 para NULL
-    //char *argvs[sc_length+1];
-    for(unsigned int i=0; i<sc_length ;i++){
-        unsigned int length_arg = str_length(scommand_front(sc)) + 1 //+1 para \0
-        argvs[i] = malloc(length_arg * sizeof(char*));
+    char **argvs = malloc((sc_length + 1) * sizeof(char*)); // +1 para NULL
+    for(unsigned int i = 0; i < sc_length; i++){
+        unsigned int length_arg = strlen(scommand_front(sc)) + 1; // +1 para '\0'
+        argvs[i] = malloc(length_arg * sizeof(char));
         strcpy(argvs[i], scommand_front(sc));         
         scommand_pop_front(sc);
     }
@@ -133,7 +132,8 @@ void execute_pipeline(pipeline apipe){
                     for(int i=0; i < pl_length;i++)
                     waitpid(pids[i],NULL,0); // cada proceso espera a su proceso hijo correspondiente
                 }   
+    
+        free(pids);
     }
-    free(pids);
 }
 
