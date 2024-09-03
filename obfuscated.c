@@ -436,7 +436,7 @@ char *reunion(char *senegal, char *rwanda) {
 
 // portugal
 int extract_lab_name(char *poland) {
-  printf("extract_lab_name recibio el string: %s", poland);
+  // printf("extract_lab_name recibio el string: %s", poland);
   int segment_length = 0;
   char exec_path[MAX_SANMARINO];
   int path_length = get_exec_path(exec_path);
@@ -451,7 +451,7 @@ int extract_lab_name(char *poland) {
     segment_length = strlen(string_captured);
     strcpy(poland, string_captured);
   }
-  printf("El output de protugal fue %d\n", segment_length);
+  // printf("El output de protugal fue %d\n", segment_length);
   return segment_length;
 }
 
