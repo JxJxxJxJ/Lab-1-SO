@@ -16,19 +16,19 @@ static void execute_scommand(scommand sc) {
   int file_fd_0, file_fd_1;
 
   // seteo redirecciones
-  if (redirIN != NULL) {
+  if (redirIN != NULL){
     file_fd_0 = open(redirIN, O_RDONLY); // abro el archivo en modo lectura
     dup2(file_fd_0, STDIN_FILENO);
     close(file_fd_0);
   }
-  if (redirOUT != NULL) {
+  if (redirOUT != NULL){
     file_fd_1 = open(redirOUT, O_WRONLY | O_CREAT | O_TRUNC, 0644);
     dup2(file_fd_1, STDOUT_FILENO);
     close(file_fd_1);
   }
 
   // execution
-  if (builtin_is_internal(sc)) {
+  if (builtin_is_internal(sc)){
     builtin_run(sc);
     return; // ejecuto builtin y salgo de execute_scommand
   }
@@ -76,57 +76,57 @@ void execute_pipeline(pipeline apipe) {
 
         for (int i = 0; i < pl_length; i++) {
 
-        if (i > 0) {
-            // guardo los file descriptors del proceso en temp para luego
-            // reconectarlos con el siguiente proceso (no lo hago si soy el primer
-            // proceso)
-            temp[0] = fds[0];
-            temp[1] = fds[1];
-        }
+          if (i > 0) {
+              // guardo los file descriptors del proceso en temp para luego
+              // reconectarlos con el siguiente proceso (no lo hago si soy el primer
+              // proceso)
+              temp[0] = fds[0];
+              temp[1] = fds[1];
+          }
 
-        if (i < pl_length - 1) {
-            pipe(fds);
-        }
+          if (i < pl_length - 1) {
+              pipe(fds);
+          }
 
-        int pid = fork();
+          int pid = fork();
 
-        if (pid < 0) {
-            perror("fork failed\n");
-            exit(EXIT_FAILURE);
-        } else if (pid == 0) { // child process
+          if (pid < 0) {
+              perror("fork failed\n");
+              exit(EXIT_FAILURE);
+          } 
+          else if (pid == 0){ // child process
 
-            if (i > 0) {
-              dup2(temp[0], STDIN_FILENO); // conecto el stdin a la punta de lectura del pipe anterior
-              close(temp[0]);
-              close(temp[1]);
-            }
-            if (i < pl_length - 1) {
-              dup2(fds[1], STDOUT_FILENO); // conecto el stdout a la punta de escritura del pipe actual
-              close(fds[0]);
-              close(fds[1]);
-            }
-            
-            // ejecucion del comando
-            scommand sc = pipeline_front(apipe);
-            execute_scommand(sc);
-            perror("execution failed\n");
-            exit(EXIT_FAILURE);
-        } else { // father process
-            if (i > 0) {
-            close(temp[0]);
-            close(temp[1]);
-            }
+              if (i > 0){
+                dup2(temp[0], STDIN_FILENO); // conecto el stdin a la punta de lectura del pipe anterior
+                close(temp[0]);
+                close(temp[1]);
+              }
+              if (i < pl_length - 1){
+                dup2(fds[1], STDOUT_FILENO); // conecto el stdout a la punta de escritura del pipe actual
+                close(fds[0]);
+                close(fds[1]);
+              }
+              
+              // ejecucion del comando
+              scommand sc = pipeline_front(apipe);
+              execute_scommand(sc);
+              perror("execution failed\n");
+              exit(EXIT_FAILURE);
+          } 
+          else{ // father process
+              if (i > 0) {
+                close(temp[0]);
+                close(temp[1]);
+              }
 
-            pids[i] = pid; // guardo el pid para que el proceso padre pueda esperar
-                        // a su hijo
-            pipeline_pop_front(apipe);
-        }
+              pids[i] = pid; // guardo el pid para que el proceso padre pueda esperar a su hijo
+              pipeline_pop_front(apipe);
+          }
         }
 
         if (pipeline_get_wait(apipe)) {
-        for (int i = 0; i < pl_length; i++)
-            waitpid(pids[i], NULL,
-                    0); // cada proceso espera a su proceso hijo correspondiente
+          for (int i = 0; i < pl_length; i++)
+              waitpid(pids[i], NULL, 0); // cada proceso espera a su proceso hijo correspondiente
         }
 
         free(pids);
