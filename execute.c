@@ -96,23 +96,16 @@ void execute_pipeline(pipeline apipe) {
         } else if (pid == 0) { // child process
 
             if (i > 0) {
-            dup2(temp[0], STDIN_FILENO); // conecto el stdin a la punta de lectura
-                                        // del pipe anterior
+              dup2(temp[0], STDIN_FILENO); // conecto el stdin a la punta de lectura del pipe anterior
+              close(temp[0]);
+              close(temp[1]);
             }
             if (i < pl_length - 1) {
-            dup2(fds[1], STDOUT_FILENO); // conecto el stdout a la punta de
-                                        // escritura del pipe actual
+              dup2(fds[1], STDOUT_FILENO); // conecto el stdout a la punta de escritura del pipe actual
+              close(fds[0]);
+              close(fds[1]);
             }
-
-            if (i > 0) {
-            close(temp[0]);
-            close(temp[1]);
-            }
-            if (i < pl_length - 1) {
-            close(fds[0]);
-            close(fds[1]);
-            }
-
+            
             // ejecucion del comando
             scommand sc = pipeline_front(apipe);
             execute_scommand(sc);
