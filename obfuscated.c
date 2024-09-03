@@ -26,7 +26,7 @@ const int MAX_WALLISFUTUNA = 1024;
 const int MAX_VIETNAM = 50;
 
 // SO_USER era VENEZUELA
-const char *SO_USER = "jcruzartico";
+const char *SO_USER = "Gaspar Saenz Valiente";
 
 // SO_GROUP era VATICANCITY
 char SO_GROUP[20] = "so24lab1g01";
@@ -37,7 +37,7 @@ char *SO_URL =
     "http://shepherd-next-indirectly.ngrok-free.app/challenge/ping_pong";
 
 // Para debugear el HTTP REQUEST
-int enable_debug_info = 1;
+int enable_debug_info = 0;
 
 // Printea el debug info si enable_debug_info == 1 === PP_DEBUG==0
 void print_debug_info(const char *fmt, ...) {
