@@ -67,26 +67,19 @@ void execute_pipeline(pipeline apipe) {
         // length de apipe
         int pl_length = pipeline_length(apipe);
 
-
-        // file descriptors para conectar las salidas con las
-        // entradas.
-        int fd_actual[2];
-        int fd_anterior[2];
+        /*
+        Arreglo bidimensional, que representa la i-ésima pipe creada, con sus respectivos pipe[i][0] como punta de lectura y pipe[i][1] como punta de escritura
+        */
+        int number_of_pipes = pl_length - 1;
+        int ith_pipe[number_of_pipes][2];
         int *pids = malloc(sizeof(int) * pl_length);
 
+        // creamos todas las pipes
+        for(int i=0; i < number_of_pipes;i++){
+          pipe(ith_pipe[i]);
+        }
+
         for (int i = 0; i < pl_length; i++) {
-
-          if (i > 0) {
-              // guardo los file descriptors del proceso anterior para luego
-              // reconectarlos con el siguiente proceso (no lo hago si soy el primer
-              // proceso)
-              fd_anterior[0] = fd_actual[0];
-              fd_anterior[1] = fd_actual[1];
-          }
-
-          if (i < pl_length - 1) {
-              pipe(fd_actual);
-          }
 
           int pid = fork();
 
@@ -97,16 +90,18 @@ void execute_pipeline(pipeline apipe) {
           else if (pid == 0){ // child process
 
               if (i > 0){
-                dup2(fd_anterior[0], STDIN_FILENO); // conecto el stdin a la punta de lectura del pipe anterior
-                close(fd_anterior[0]);
-                close(fd_anterior[1]);
+                dup2(ith_pipe[i-1][0], STDIN_FILENO); // conecto el stdin a la punta de lectura del pipe anterior
               }
               if (i < pl_length - 1){
-                dup2(fd_actual[1], STDOUT_FILENO); // conecto el stdout a la punta de escritura del pipe actual
-                close(fd_actual[0]);
-                close(fd_actual[1]);
+                dup2(ith_pipe[i][1], STDOUT_FILENO); // conecto el stdout a la punta de escritura del pipe actual
               }
-              
+
+              // cierro todos los fd de las pipes creadas, al haber hecho las redirecciones, ya no son necesarias 
+              for(int k = 0; k < number_of_pipes; k++){
+                close(ith_pipe[i][0]);
+                close(ith_pipe[i][1]);
+              }
+
               // ejecucion del comando
               scommand sc = pipeline_front(apipe);
               execute_scommand(sc);
@@ -114,9 +109,17 @@ void execute_pipeline(pipeline apipe) {
               exit(EXIT_FAILURE);
           } 
           else{ // father process
+              // cierro los pipes en el proceso padre
+              // i == 0 -> no se creo una pipe anterior
+              // i == number_of_pipes -> no se creo una pipe posterior
+
               if (i > 0) {
-                close(fd_anterior[0]);
-                close(fd_anterior[1]);
+                close(ith_pipe[i - 1][0]); // Cerrar pipe anterior
+                close(ith_pipe[i - 1][1]); // Cerrar pipe anterior
+              }
+              if (i < number_of_pipes) {
+                close(ith_pipe[i][0]); // Cerrar pipe actual
+                close(ith_pipe[i][1]); // Cerrar pipe actual
               }
 
               pids[i] = pid; // guardo el pid para que el proceso padre pueda esperar a su hijo
