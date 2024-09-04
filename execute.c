@@ -16,19 +16,19 @@ static void execute_scommand(scommand sc) {
   int fd_0, fd_1;
 
   // seteo redirecciones
-  if (redirIN != NULL){
+  if (redirIN != NULL) {
     fd_0 = open(redirIN, O_RDONLY); // abro el archivo en modo lectura
     dup2(fd_0, STDIN_FILENO);
     close(fd_0);
   }
-  if (redirOUT != NULL){
+  if (redirOUT != NULL) {
     fd_1 = open(redirOUT, O_WRONLY | O_CREAT | O_TRUNC, 0644);
     dup2(fd_1, STDOUT_FILENO);
     close(fd_1);
   }
 
   // execution
-  if (builtin_is_internal(sc)){
+  if (builtin_is_internal(sc)) {
     builtin_run(sc);
     return; // ejecuto builtin y salgo de execute_scommand
   }
@@ -58,80 +58,86 @@ static void execute_scommand(scommand sc) {
  */
 void execute_pipeline(pipeline apipe) {
   assert(apipe != NULL);
-    if(builtin_alone(apipe)){
-        builtin_run(pipeline_front(apipe));
-        return;
+  if (builtin_alone(apipe)) {
+    builtin_run(pipeline_front(apipe));
+    return;
+  }
+
+  if (!pipeline_is_empty(apipe)) {
+    // length de apipe
+    int pl_length = pipeline_length(apipe);
+
+    /*
+    Arreglo bidimensional, que representa la i-ésima pipe creada, con sus
+    respectivos pipe[i][0] como punta de lectura y pipe[i][1] como punta de
+    escritura
+    */
+    int number_of_pipes = pl_length - 1;
+    int ith_pipe[number_of_pipes][2];
+    int *pids = malloc(sizeof(int) * pl_length);
+
+    // creamos todas las pipes
+    for (int i = 0; i < number_of_pipes; i++) {
+      pipe(ith_pipe[i]);
     }
 
-    if (!pipeline_is_empty(apipe)) {
-        // length de apipe
-        int pl_length = pipeline_length(apipe);
+    for (int i = 0; i < pl_length; i++) {
 
-        /*
-        Arreglo bidimensional, que representa la i-ésima pipe creada, con sus respectivos pipe[i][0] como punta de lectura y pipe[i][1] como punta de escritura
-        */
-        int number_of_pipes = pl_length - 1;
-        int ith_pipe[number_of_pipes][2];
-        int *pids = malloc(sizeof(int) * pl_length);
+      int pid = fork();
 
-        // creamos todas las pipes
-        for(int i=0; i < number_of_pipes;i++){
-          pipe(ith_pipe[i]);
+      if (pid < 0) {
+        perror("fork failed\n");
+        exit(EXIT_FAILURE);
+      } else if (pid == 0) { // child process
+
+        if (i > 0) {
+          dup2(ith_pipe[i - 1][0],
+               STDIN_FILENO); // conecto el stdin a la punta de lectura del pipe
+                              // anterior
+        }
+        if (i < pl_length - 1) {
+          dup2(ith_pipe[i][1], STDOUT_FILENO); // conecto el stdout a la punta
+                                               // de escritura del pipe actual
         }
 
-        for (int i = 0; i < pl_length; i++) {
-
-          int pid = fork();
-
-          if (pid < 0) {
-              perror("fork failed\n");
-              exit(EXIT_FAILURE);
-          } 
-          else if (pid == 0){ // child process
-
-              if (i > 0){
-                dup2(ith_pipe[i-1][0], STDIN_FILENO); // conecto el stdin a la punta de lectura del pipe anterior
-              }
-              if (i < pl_length - 1){
-                dup2(ith_pipe[i][1], STDOUT_FILENO); // conecto el stdout a la punta de escritura del pipe actual
-              }
-
-              // cierro todos los fd de las pipes creadas, al haber hecho las redirecciones, ya no son necesarias 
-              for(int k = 0; k < number_of_pipes; k++){
-                close(ith_pipe[k][0]);
-                close(ith_pipe[k][1]);
-              }
-
-              // ejecucion del comando
-              scommand sc = pipeline_front(apipe);
-              execute_scommand(sc);
-              perror("execution failed\n");
-              exit(EXIT_FAILURE);
-          } 
-          else{ // father process
-              // cierro los pipes en el proceso padre
-              // i == 0 -> no se creo una pipe anterior
-              // i == number_of_pipes -> no se creo una pipe posterior
-
-              if (i > 0) {
-                close(ith_pipe[i - 1][0]); // Cerrar pipe anterior
-                close(ith_pipe[i - 1][1]); // Cerrar pipe anterior
-              }
-              if (i < number_of_pipes) {
-                close(ith_pipe[i][0]); // Cerrar pipe actual
-                close(ith_pipe[i][1]); // Cerrar pipe actual
-              }
-
-              pids[i] = pid; // guardo el pid para que el proceso padre pueda esperar a su hijo
-              pipeline_pop_front(apipe);
-          }
+        // cierro todos los fd de las pipes creadas, al haber hecho las
+        // redirecciones, ya no son necesarias
+        for (int k = 0; k < number_of_pipes; k++) {
+          close(ith_pipe[k][0]);
+          close(ith_pipe[k][1]);
         }
 
-        if (pipeline_get_wait(apipe)) {
-          for (int i = 0; i < pl_length; i++)
-              waitpid(pids[i], NULL, 0); // cada proceso espera a su proceso hijo correspondiente
+        // ejecucion del comando
+        scommand sc = pipeline_front(apipe);
+        execute_scommand(sc);
+        perror("execution failed\n");
+        exit(EXIT_FAILURE);
+      } else { // father process
+        // cierro los pipes en el proceso padre
+        // i == 0 -> no se creo una pipe anterior
+        // i == number_of_pipes -> no se creo una pipe posterior
+
+        if (i > 0) {
+          close(ith_pipe[i - 1][0]); // Cerrar pipe anterior
+          close(ith_pipe[i - 1][1]); // Cerrar pipe anterior
+        }
+        if (i < number_of_pipes) {
+          close(ith_pipe[i][0]); // Cerrar pipe actual
+          close(ith_pipe[i][1]); // Cerrar pipe actual
         }
 
-        free(pids);
+        pids[i] = pid; // guardo el pid para que el proceso padre pueda esperar
+                       // a su hijo
+        pipeline_pop_front(apipe);
+      }
     }
+
+    if (pipeline_get_wait(apipe)) {
+      for (int i = 0; i < pl_length; i++)
+        waitpid(pids[i], NULL,
+                0); // cada proceso espera a su proceso hijo correspondiente
+    }
+
+    free(pids);
+  }
 }
