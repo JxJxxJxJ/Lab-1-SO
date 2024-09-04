@@ -90,7 +90,7 @@ void execute_pipeline(pipeline apipe) {
         exit(EXIT_FAILURE);
       } else if (pid == 0) { // child process
 
-        if (i > 0) {
+        if (0 < i) {
           dup2(ith_pipe[i - 1][0],
                STDIN_FILENO); // conecto el stdin a la punta de lectura del pipe
                               // anterior
@@ -117,7 +117,7 @@ void execute_pipeline(pipeline apipe) {
         // i == 0 -> no se creo una pipe anterior
         // i == number_of_pipes -> no se creo una pipe posterior
 
-        if (i > 0) {
+        if (0 < i) {
           close(ith_pipe[i - 1][0]); // Cerrar pipe anterior
           close(ith_pipe[i - 1][1]); // Cerrar pipe anterior
         }
