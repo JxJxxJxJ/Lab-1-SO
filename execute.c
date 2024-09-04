@@ -98,8 +98,8 @@ void execute_pipeline(pipeline apipe) {
 
               // cierro todos los fd de las pipes creadas, al haber hecho las redirecciones, ya no son necesarias 
               for(int k = 0; k < number_of_pipes; k++){
-                close(ith_pipe[i][0]);
-                close(ith_pipe[i][1]);
+                close(ith_pipe[k][0]);
+                close(ith_pipe[k][1]);
               }
 
               // ejecucion del comando
