@@ -19,7 +19,7 @@ static void execute_scommand(scommand sc) {
   if (redirIN != NULL) {
     fd_0 = open(redirIN, O_RDONLY); // abro el archivo en modo lectura
     if(fd_0 < 0){
-      perror("Error al abrir el archivo de input: %s\n", redirIN);
+      fprintf(stderr,"Error al abrir el archivo de input: %s\n", redirIN);
       exit(EXIT_FAILURE);
     }
     dup2(fd_0, STDIN_FILENO);
@@ -27,8 +27,8 @@ static void execute_scommand(scommand sc) {
   }
   if (redirOUT != NULL) {
     fd_1 = open(redirOUT, O_WRONLY | O_CREAT | O_TRUNC, 0644);
-    if(fd_0 < 0){
-      perror("Error al abrir el archivo de output: %s\n", redirOUT);
+    if(fd_1 < 0){
+      fprintf(stderr,"Error al abrir el archivo de output: %s\n", redirOUT);
       exit(EXIT_FAILURE);
     }
     dup2(fd_1, STDOUT_FILENO);
