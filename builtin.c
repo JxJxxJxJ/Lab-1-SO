@@ -7,6 +7,7 @@
 #include <stdlib.h>
 #include <string.h>
 #include <unistd.h> //chdir
+#include "tests/syscall_mock.h"
 
 // Enum de los comandos que mybash acepta
 // CMD_COUNT es la cantidad de comandos aceptados hasta ahora por la shell

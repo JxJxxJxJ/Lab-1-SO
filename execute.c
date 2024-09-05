@@ -1,23 +1,24 @@
 #include "execute.h"
 #include "builtin.h"
-#include "command.h"
+#include <stdio.h>
 #include <assert.h>
+#include <unistd.h>
+#include <sys/wait.h>
 #include <fcntl.h>
 #include <glib.h>
-#include <stdbool.h>
-#include <stdio.h>
-#include <stdlib.h>
-#include <sys/wait.h>
-#include <unistd.h>
+#include <signal.h>
+#include "command.h"
+#include "tests/syscall_mock.h"
+
 
 static void execute_scommand(scommand sc) {
   char *redirIN = scommand_get_redir_in(sc);
   char *redirOUT = scommand_get_redir_out(sc);
-  int fd_0, fd_1;
+  //int fd_0, fd_1;
 
   // seteo redirecciones
   if (redirIN != NULL) {
-    fd_0 = open(redirIN, O_RDONLY); // abro el archivo en modo lectura
+    int fd_0 = open(redirIN, O_RDONLY, S_IRWXU); // abro el archivo en modo lectura
     if(fd_0 < 0){
       fprintf(stderr,"Error al abrir el archivo de input: %s\n", redirIN);
       exit(EXIT_FAILURE);
@@ -26,7 +27,7 @@ static void execute_scommand(scommand sc) {
     close(fd_0);
   }
   if (redirOUT != NULL) {
-    fd_1 = open(redirOUT, O_WRONLY | O_CREAT | O_TRUNC, 0644);
+    int fd_1 = open(redirOUT, O_WRONLY | O_CREAT | O_TRUNC, S_IRWXU);
     if(fd_1 < 0){
       fprintf(stderr,"Error al abrir el archivo de output: %s\n", redirOUT);
       exit(EXIT_FAILURE);
