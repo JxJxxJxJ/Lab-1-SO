@@ -18,11 +18,19 @@ static void execute_scommand(scommand sc) {
   // seteo redirecciones
   if (redirIN != NULL) {
     fd_0 = open(redirIN, O_RDONLY); // abro el archivo en modo lectura
+    if(fd_0 < 0){
+      perror("Error al abrir el archivo de input: %s\n", redirIN);
+      exit(EXIT_FAILURE);
+    }
     dup2(fd_0, STDIN_FILENO);
     close(fd_0);
   }
   if (redirOUT != NULL) {
     fd_1 = open(redirOUT, O_WRONLY | O_CREAT | O_TRUNC, 0644);
+    if(fd_0 < 0){
+      perror("Error al abrir el archivo de output: %s\n", redirOUT);
+      exit(EXIT_FAILURE);
+    }
     dup2(fd_1, STDOUT_FILENO);
     close(fd_1);
   }
@@ -46,6 +54,11 @@ static void execute_scommand(scommand sc) {
 
   execvp(argvs[0], argvs);
   perror("Error executing command");
+  // liberamos memoria asignada en caso de que execvp falle
+  for (unsigned int i = 0; i < sc_length; i++) {
+    free(argvs[i]);
+  }
+  free(argvs);
   exit(EXIT_FAILURE);
 }
 
@@ -88,7 +101,8 @@ void execute_pipeline(pipeline apipe) {
       if (pid < 0) {
         perror("fork failed\n");
         exit(EXIT_FAILURE);
-      } else if (pid == 0) { // child process
+      } 
+      else if (pid == 0) { // child process
 
         if (0 < i) {
           dup2(ith_pipe[i - 1][0],
@@ -112,7 +126,8 @@ void execute_pipeline(pipeline apipe) {
         execute_scommand(sc);
         perror("execution failed\n");
         exit(EXIT_FAILURE);
-      } else { // father process
+      } 
+      else { // father process
         // cierro los pipes en el proceso padre
         // i == 0 -> no se creo una pipe anterior
         // i == number_of_pipes -> no se creo una pipe posterior
