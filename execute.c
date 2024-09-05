@@ -14,11 +14,11 @@
 static void execute_scommand(scommand sc) {
   char *redirIN = scommand_get_redir_in(sc);
   char *redirOUT = scommand_get_redir_out(sc);
-  //int fd_0, fd_1;
+  int fd_0, fd_1;
 
   // seteo redirecciones
   if (redirIN != NULL) {
-    int fd_0 = open(redirIN, O_RDONLY, S_IRWXU); // abro el archivo en modo lectura
+    fd_0 = open(redirIN, O_RDONLY, S_IRWXU); // abro el archivo en modo lectura
     if(fd_0 < 0){
       fprintf(stderr,"Error al abrir el archivo de input: %s\n", redirIN);
       exit(EXIT_FAILURE);
@@ -27,7 +27,7 @@ static void execute_scommand(scommand sc) {
     close(fd_0);
   }
   if (redirOUT != NULL) {
-    int fd_1 = open(redirOUT, O_WRONLY | O_CREAT | O_TRUNC, S_IRWXU);
+    fd_1 = open(redirOUT, O_WRONLY | O_CREAT | O_TRUNC, S_IRWXU);
     if(fd_1 < 0){
       fprintf(stderr,"Error al abrir el archivo de output: %s\n", redirOUT);
       exit(EXIT_FAILURE);
