@@ -91,18 +91,15 @@ void execute_pipeline(pipeline apipe) {
       
       int pipe_1to2[2];
       pipe(pipe_1to2);
-      int * pid1 = malloc(sizeof(int));
-      int * pid2 = malloc(sizeof(int));
-
-      for(int i=0;i < pl_length ;i++){   
+      int pid1;
+      int pid2;
+      for(unsigned int i=0;i < pl_length ;i++){   
         int pid = fork();
         if(pid < 0){
           perror("fork failed\n");
           exit(EXIT_FAILURE);
         }
         if(pid == 0){ // child
-          set_up_redirections(sc1);
-          set_up_redirections(sc2);
 
           if(i==0){
             set_up_redirections(sc1);
@@ -116,7 +113,12 @@ void execute_pipeline(pipeline apipe) {
           close(pipe_1to2[1]);
           close(pipe_1to2[0]);
 
-
+          if(builtin_is_internal(sc1)){
+            builtin_run(sc1);
+            return;
+          }
+          // si el comando no es interno, lo ejecuto manual
+          manual_exec(sc1);
         }
         else{
           close(pipe_1to2[1]);
@@ -130,11 +132,10 @@ void execute_pipeline(pipeline apipe) {
         }
       }
       if(pipeline_get_wait(apipe)){
-          waitpid(pid, NULL, 0);
+          waitpid(pid1, NULL, 0);
+          waitpid(pid2, NULL, 0);
         }
-      
-      free(pid1);
-      free(pid2);
+    }  
   }
 }
 
