@@ -37,7 +37,18 @@ static void set_up_redirections(scommand sc){
 }
 
 static void manual_exec(scommand sc){
-  
+  unsigned int sc_length = scommand_length(sc);
+  char **argvs_sc = malloc((sc_length + 1) * sizeof(char *));
+    for(unsigned int i=0; i < sc_length ;i++){
+      unsigned int length_arg = strlen(scommand_front(sc)) + 1;
+      argvs_sc[i] = malloc(length_arg * sizeof(char));
+      strcpy(argvs_sc[i], scommand_front(sc));
+      scommand_pop_front(sc);
+    }
+        
+    argvs_sc[sc_length]=NULL;
+    execvp(argvs_sc[0],argvs_sc);
+    perror("Error executing command");
 }
 
 
@@ -46,10 +57,11 @@ void execute_pipeline(pipeline apipe) {
   
   if(!pipeline_is_empty(apipe)){
     unsigned int pl_length = pipeline_length(apipe);
-    
-    if(pl_length == 1){
+    scommand sc1 = pipeline_front(apipe);
+    pipeline_pop_front(apipe);
 
-      scommand sc = scommand_pop_front(apipe);
+    if(pl_length == 1){
+      scommand sc1 = pipeline_front(apipe);
       int pid = fork();
       if(pid < 0){
         perror("fork failed\n");
@@ -57,41 +69,72 @@ void execute_pipeline(pipeline apipe) {
       }
       if(pid == 0){ // child
 
-        set_up_redirections(sc);
+        set_up_redirections(sc1);
         
-        if(builtin_is_internal(sc)){
-          builtin_run(sc);
+        if(builtin_is_internal(sc1)){
+          builtin_run(sc1);
+          return;
         }
-
         // si el comando no es interno, lo ejecuto manual
-
-        unsigned int sc_length = scommand_length(sc);
-        char **argvs_sc = malloc((sc_length + 1) * sizeof(char *));
-        for(unsigned int i=0; i < sc_length+1 ;i++){
-          unsigned int length_arg = strlen(scommand_front(sc)) + 1;
-          argvs_sc[i] = malloc(length_arg * sizeof(char));
-          strcpy(argvs_sc[i], scommand_front(sc));
-          scommand_pop_front(sc);nt;
-        }
-        
-        argvs_sc[sc_length]=NULL;
-        execvp(argvs_sc[0],argvs_sc);
-        perror("Error executing command");
+        manual_exec(sc1);
       }
       else{ // father
-        if
-        
+        if(pipeline_get_wait(apipe)){
+          waitpid(pid, NULL, 0);
+        }
       }
-
-
     }
 
-  
-  
+    if(pl_length == 2){
+      scommand sc2 = pipeline_front(apipe);
+      pipeline_pop_front(apipe);
+      
+      int pipe_1to2[2];
+      pipe(pipe_1to2);
+      int * pid1 = malloc(sizeof(int));
+      int * pid2 = malloc(sizeof(int));
+
+      for(int i=0;i < pl_length ;i++){   
+        int pid = fork();
+        if(pid < 0){
+          perror("fork failed\n");
+          exit(EXIT_FAILURE);
+        }
+        if(pid == 0){ // child
+          set_up_redirections(sc1);
+          set_up_redirections(sc2);
+
+          if(i==0){
+            set_up_redirections(sc1);
+            dup2(pipe_1to2[1], STDOUT_FILENO);
+          }
+          if(i==1){
+            set_up_redirections(sc2);
+            dup2(pipe_1to2[0], STDIN_FILENO);
+          }
+          
+          close(pipe_1to2[1]);
+          close(pipe_1to2[0]);
 
 
-
-
+        }
+        else{
+          close(pipe_1to2[1]);
+          close(pipe_1to2[0]);
+          if(i==0){
+            pid1 = pid;
+          }
+          if(i==1){
+            pid2 = pid;
+          }
+        }
+      }
+      if(pipeline_get_wait(apipe)){
+          waitpid(pid, NULL, 0);
+        }
+      
+      free(pid1);
+      free(pid2);
   }
 }
 
@@ -235,10 +278,10 @@ void execute_pipeline(pipeline apipe) {
 
 //         pids[i] = pid; // guardo el pid para que el proceso padre pueda esperar
 //                        // a su hijo
-//         pipeline_pop_front(apipe);
 //       }
 //     }
 
+//     pipeline_pop_front(apipe);
 //     if (pipeline_get_wait(apipe)) {
 //       for (int i = 0; i < pl_length; i++)
 //         waitpid(pids[i], NULL,
