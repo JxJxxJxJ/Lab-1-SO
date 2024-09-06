@@ -1,5 +1,6 @@
 #include "builtin.h"
 #include "command.h"
+#include "tests/syscall_mock.h"
 #include <assert.h>
 #include <glib.h>
 #include <stdbool.h>
@@ -7,23 +8,20 @@
 #include <stdlib.h>
 #include <string.h>
 #include <unistd.h> //chdir
-#include "tests/syscall_mock.h"
 
-// Enum de los comandos que mybash acepta
-// CMD_COUNT es la cantidad de comandos aceptados hasta ahora por la shell
-typedef enum { CMD_CD, CMD_HELP, CMD_EXIT, CMD_COUNT } Command;
+static void handle_carita(scommand sc) { printf(":)\n"); }
 
 static void handle_cd(scommand sc) {
-  // Planteo dos casos: uno en el que solo se coloca el cd sin dirección y otro
-  // donde se le da una dirección específica.
+  // Planteo dos casos: uno en el que solo se coloca el cd sin dirección y
+  // otro donde se le da una dirección específica.
 
   // Si el tamaño del scommand es 1, significa que se trata del cd solo sin
   // dirección.
   if (scommand_length(sc) == 1) {
     chdir(getenv("HOME")); // La variable 'HOME' está configurada para apuntar
                            // al directorio personal del usuario actual,
-                           // entonces getenv accede al valor de dicha variable
-                           // y me transporta a esa dirección.
+                           // entonces getenv accede al valor de dicha
+                           // variable y me transporta a esa dirección.
   } else { // Si el tamaño del scommand es != 1, significa que el cd viene
            // acompañado de una dirección.
     scommand_pop_front(
@@ -40,63 +38,58 @@ static void handle_cd(scommand sc) {
   }
 }
 
-static void handle_help(scommand sc) {
-  printf("«myBash» v1.0, por :(){ :|:& };: (g-01)\n\n");
-  printf("Los autores que colaboraron para la creación del mismo son: \n- Juan "
-         "Cruz Hermosilla Artico\n- Gaspar Saenz Valiente\n- Exequiel "
-         "Trinidad\n- Fernando Cabrera Luque\n\n");
-  printf("Los comandos internos de este bash son:\n");
-  printf(
-      "'cd <path>' permite desplazarse entre los directorios del sistema.\n");
-  printf("'help' muestra los comandos internos del bash e información del "
-         "mismo (¡USTED ESTÁ AQUÍ!).\n");
-  printf("'exit' cierra el bash actual.\n");
-}
-
 static void handle_exit(scommand sc) {
   printf("¡Adiós!\n");
   exit(EXIT_SUCCESS);
 }
 
-// Cada comando <comando> tendra una funcion void asociada <handle_comando> y
-// una descripcion de lo que hace en help
+static void handle_cmds(scommand sc) {
+  printf("Los comandos internos de este bash son:\n");
 
-// uso const para decir que los datos son solo de lectura
-/* void * (*function)();
- * “declare a function pointer named function, which points to a function that
- * takes an unspecified number of arguments, then returns a void *"
- *
- * <tipo_de_output> (*<nombre_de_funcion>) (<tipo_de_argumento_de_la_funcion>)
- */
+  // Busco la length del comando mas largo
+  size_t max_length = 0;
+  for (size_t i = 0; i < CMD_COUNT; i++) {
+    size_t name_length = strlen(commands_registry[i].name);
+    if (name_length > max_length) {
+      max_length = name_length;
+    }
+  }
+  for (size_t i = 0; i < CMD_COUNT; i++) {
+    // %*s significa que el length del string lo doy como un argumento
+    // %-s left-alineo el string, podria pero a mi no me gusta
+    printf("%*s : %s\n", (int)max_length, commands_registry[i].name,
+           commands_registry[i].data.help);
+  }
+}
 
-// Todo comando debera tener una funcion que se encargue de ejecutar la tarea
-// del comando y una descripcion obtenible al hacer <comando> --help
-typedef struct {
-  void (*handler)(scommand); // Funcion que maneja el comando
-  const char *help;          // Descripcion del comando
-} CMD_DATA;                  //
-                             //
-typedef struct {             //
-  const char *name;          // Nombre del comando
-  const CMD_DATA data;       // Data del comando
-} CMD_ENTRY;
+static void handle_help(scommand sc) {
+  printf("«myBash» v1.0, por :(){ :|:& };: (g-01)\n\n");
+  printf("Los autores que colaboraron para la creación del mismo son: \n- Juan "
+         "Cruz Hermosilla Artico\n- Gaspar Saenz Valiente\n- Exequiel "
+         "Trinidad\n- Fernando Cabrera Luque\n\n");
+  // Printeo ademas los comandos
+  handle_cmds(sc);
+}
 
 // Un arreglo global de CMD_ENTRY.
 // Este arreglo lleva el registro de todos los comandos builtin de myBash
 // Para agregar un comando al myBash, debo agregar una entrada al arreglo y
 // proveer un puntero a una funcion handle valida
 CMD_ENTRY commands_registry[CMD_COUNT] = {
-    {"cd", {handle_cd, "Cambiar de directorio"}},
-    {"help", {handle_help, "Nuestro proyecto de SO"}},
-    {"exit", {handle_exit, "Es para salir de la sesión"}},
-};
+    {"cd",
+     {handle_cd, "Permite desplazarse entre los directorios del sistema."}},
+    {"help", {handle_help, "Muestra información del mybash."}},
+    {"exit", {handle_exit, "Es para salir de la sesión."}},
+    {":)", {handle_carita, "Printea una carita."}},
+    {"cmds",
+     {handle_cmds, "Muestra los comandos builtin y sus descripciones."}}};
 
-// Devuelva un puntero a una GQueue populado con los nombres gstringuificados de
-// CMD_ENTRY commands_registry
+// Devuelva un puntero a una GQueue populado con los nombres
+// gstringuificados de CMD_ENTRY commands_registry
 static GQueue *init_gq_command_table(void) {
   GQueue *gq_command_table = g_queue_new();
-  // Tomo los nombres de los comandos en commands_registry, los gstringuifico y
-  // los meto a la GQueue* gq_command_table
+  // Tomo los nombres de los comandos en commands_registry, los gstringuifico
+  // y los meto a la GQueue* gq_command_table
   for (size_t i = 0; i < CMD_COUNT; i++) {
     char *name_pointer =
         malloc((strlen(commands_registry[i].name) + 1) * sizeof(char));
@@ -151,8 +144,8 @@ bool builtin_is_internal(scommand cmd) {
   //   printf("%s: no se encontró la orden\n", str_scommand);
   // }
 
-  // Destruyo la gq_command_table con la funcion para liberar cada elemento (son
-  // strings, los libero con free)
+  // Destruyo la gq_command_table con la funcion para liberar cada elemento
+  // (son strings, los libero con free)
   g_queue_free_full(gq_command_table, free);
   return found;
 }
