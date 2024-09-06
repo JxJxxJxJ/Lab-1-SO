@@ -14,7 +14,7 @@ static void show_prompt(void) {
   // Para printear username
   print_colored("╭─", NEGRO2FG, NULL);
   print_colored("", VERDE2FG, NEGRO2BG);
-  print_colored(g_get_user_name(), NEGROFG, VERDE2BG);
+  print_colored(g_get_user_name(), NEGRO2FG, VERDE2BG);
   print_colored("", VERDE2FG, NULL);
   print_colored(" ", NEGROFG, NULL);
   print_colored(" ", NEGROFG, NULL);
@@ -24,7 +24,7 @@ static void show_prompt(void) {
   print_colored("", NEGRO2FG, NEGRO2BG);
   // Para printear icono de directorio
   print_colored("", AZULFG, NEGRO2BG);
-  print_colored("", NEGROFG, AZULBG);
+  print_colored("", NEGRO2FG, AZULBG);
   print_colored("", AZULFG, NULL);
   // Salto de linea
   print_colored("\n", AZULFG, NULL);
