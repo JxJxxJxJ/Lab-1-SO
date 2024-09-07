@@ -24,6 +24,7 @@ static void set_up_redirections(scommand sc){
     }
     dup2(fd_0, STDIN_FILENO);
     close(fd_0);
+    free(redirIN);
   }
   if (redirOUT != NULL) {
     fd_1 = open(redirOUT, O_WRONLY | O_CREAT | O_TRUNC, S_IRWXU);
@@ -33,6 +34,8 @@ static void set_up_redirections(scommand sc){
     }
     dup2(fd_1, STDOUT_FILENO);
     close(fd_1);
+    free(redirOUT);
+
   }
 }
 
@@ -54,14 +57,24 @@ static void manual_exec(scommand sc){
 
 void execute_pipeline(pipeline apipe) {
   assert(apipe != NULL);
+  if (builtin_alone(apipe)) {
+    builtin_run(pipeline_front(apipe));
+    return;
+  }
   
   if(!pipeline_is_empty(apipe)){
+    
+    if(!pipeline_get_wait(apipe)){ 
+       signal(SIGCHLD,SIG_IGN);
+    }
+
     unsigned int pl_length = pipeline_length(apipe);
     scommand sc1 = pipeline_front(apipe);
     pipeline_pop_front(apipe);
 
+
+
     if(pl_length == 1){
-      scommand sc1 = pipeline_front(apipe);
       int pid = fork();
       if(pid < 0){
         perror("fork failed\n");
@@ -85,57 +98,68 @@ void execute_pipeline(pipeline apipe) {
       }
     }
 
-    if(pl_length == 2){
+    if (pl_length == 2) {
       scommand sc2 = pipeline_front(apipe);
       pipeline_pop_front(apipe);
       
       int pipe_1to2[2];
-      pipe(pipe_1to2);
-      int pid1;
-      int pid2;
-      for(unsigned int i=0;i < pl_length ;i++){   
-        int pid = fork();
-        if(pid < 0){
+      if (pipe(pipe_1to2) < 0) {
+          perror("pipe failed");
+          exit(EXIT_FAILURE);
+      }
+
+      int pid1 = fork();
+      if (pid1 < 0) {
           perror("fork failed\n");
           exit(EXIT_FAILURE);
-        }
-        if(pid == 0){ // child
-
-          if(i==0){
-            set_up_redirections(sc1);
-            dup2(pipe_1to2[1], STDOUT_FILENO);
-          }
-          if(i==1){
-            set_up_redirections(sc2);
-            dup2(pipe_1to2[0], STDIN_FILENO);
-          }
-          
-          close(pipe_1to2[1]);
-          close(pipe_1to2[0]);
-
-          if(builtin_is_internal(sc1)){
-            builtin_run(sc1);
-            return;
-          }
-          // si el comando no es interno, lo ejecuto manual
-          manual_exec(sc1);
-        }
-        else{
-          close(pipe_1to2[1]);
-          close(pipe_1to2[0]);
-          if(i==0){
-            pid1 = pid;
-          }
-          if(i==1){
-            pid2 = pid;
-          }
-        }
       }
-      if(pipeline_get_wait(apipe)){
-          waitpid(pid1, NULL, 0);
-          waitpid(pid2, NULL, 0);
-        }
-    }  
+
+      if (pid1 == 0) { // Primer hijo (sc1)
+          set_up_redirections(sc1);
+          dup2(pipe_1to2[1], STDOUT_FILENO);  // Duplicar salida al pipe
+          close(pipe_1to2[0]);  // Cerrar el extremo de lectura en el hijo
+          close(pipe_1to2[1]);  // Cerrar el extremo de escritura después de duplicar
+
+          if (builtin_is_internal(sc1)) {
+              builtin_run(sc1);
+              exit(EXIT_SUCCESS);
+          } else {
+              manual_exec(sc1);
+          }
+          exit(EXIT_FAILURE);  // Si execvp falla
+      }
+
+      int pid2 = fork();
+      if (pid2 < 0) {
+          perror("fork failed\n");
+          exit(EXIT_FAILURE);
+      }
+
+      if (pid2 == 0) { // Segundo hijo (sc2)
+          set_up_redirections(sc2);
+          dup2(pipe_1to2[0], STDIN_FILENO);  // Duplicar entrada del pipe
+          close(pipe_1to2[1]);  // Cerrar el extremo de escritura en el hijo
+          close(pipe_1to2[0]);  // Cerrar el extremo de lectura después de duplicar
+
+          if (builtin_is_internal(sc2)) {
+              builtin_run(sc2);
+              exit(EXIT_SUCCESS);
+          } else {
+              manual_exec(sc2);
+          }
+          exit(EXIT_FAILURE);  // Si execvp falla
+      }
+
+      // Proceso padre
+      close(pipe_1to2[0]);  // Cerrar extremos de pipe en el padre
+      close(pipe_1to2[1]);
+
+      if (pipeline_get_wait(apipe)) {
+          waitpid(pid1, NULL, 0);  // Esperar al primer hijo
+          waitpid(pid2, NULL, 0);  // Esperar al segundo hijo
+      }
+  }
+
   }
 }
 
