@@ -69,54 +69,60 @@ void execute_pipeline(pipeline apipe) {
 
   if (!pipeline_is_empty(apipe)) {
     if (!pipeline_get_wait(apipe)) { 
+      // Ignorar SIGCHLD si no debemos esperar a los hijos
       signal(SIGCHLD, SIG_IGN);
     }
 
     unsigned int pl_length = pipeline_length(apipe);
 
-    if(pl_length == 1){
+    if (pl_length == 1) {
       int pid = fork();
       if (pid < 0) {
         perror("fork failed\n");
         exit(EXIT_FAILURE);
       } 
-      else if (pid == 0) { // child process
+      else if (pid == 0) { // Proceso hijo
         scommand sc = pipeline_front(apipe);
         set_up_redirections(sc);
         manual_exec(sc);
       }
-      else{
-        pipeline_pop_front(apipe);
-         waitpid(pid, NULL, 0);
+      else {
+        pipeline_pop_front(apipe); // Proceso padre
+        if (pipeline_get_wait(apipe)) {
+          waitpid(pid, NULL, 0);  // Esperar al hijo
+        }
       }
-
     }
-    if(pl_length == 2){
-
+    else if (pl_length == 2) {
       int fd[2];
-      pipe(fd);
+      if (pipe(fd) < 0) {
+        perror("pipe failed");
+        exit(EXIT_FAILURE);
+      }
 
       int pid1 = fork();
       if (pid1 < 0) {
         perror("fork failed\n");
         exit(EXIT_FAILURE);
       }
-      if (pid1 == 0) { // primer hijo
+      if (pid1 == 0) { // Primer hijo
         scommand sc1 = pipeline_front(apipe);
         set_up_redirections(sc1);
 
         dup2(fd[1], STDOUT_FILENO);
+        close(fd[0]); 
         close(fd[1]);
-        close(fd[0]);
 
-        if(builtin_is_internal(sc1)){
+        if (builtin_is_internal(sc1)) {
           builtin_run(sc1);
         }
-        else{
+        else {
           manual_exec(sc1);
         }
+        exit(EXIT_SUCCESS); 
       }
-      // sigue padre
+      
+      
       if (pipeline_get_wait(apipe)) {
         waitpid(pid1, NULL, 0);
       }
@@ -126,31 +132,34 @@ void execute_pipeline(pipeline apipe) {
         perror("fork failed\n");
         exit(EXIT_FAILURE);
       }
-      if (pid2 == 0) { // segundo hijo
+      if (pid2 == 0) { // Segundo hijo
         scommand sc2 = pipeline_front(apipe);
         set_up_redirections(sc2);
 
         dup2(fd[0], STDIN_FILENO);
-        close(fd[1]);
+        close(fd[1]); 
         close(fd[0]);
 
-        if(builtin_is_internal(sc2)){
+        if (builtin_is_internal(sc2)) {
           builtin_run(sc2);
         }
-        else{
+        else {
           manual_exec(sc2);
         }
-      }     
-      // soy padre
-      if (pipeline_get_wait(apipe)) {
-        waitpid(pid2, NULL, 0);
+        exit(EXIT_SUCCESS); 
       }
-      close(fd[1]);
-      close(fd[0]);
 
+      // Proceso padre
+      close(fd[0]);
+      close(fd[1]);
+      pipeline_pop_front(apipe);
+      if (pipeline_get_wait(apipe)) {
+        waitpid(pid2, NULL, 0); 
+      }
     }
+  }
 }
-}
+
 
 
 
