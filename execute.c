@@ -24,7 +24,6 @@ static void set_up_redirections(scommand sc){
     }
     dup2(fd_0, STDIN_FILENO);
     close(fd_0);
-    free(redirIN);
   }
   if (redirOUT != NULL) {
     fd_1 = open(redirOUT, O_WRONLY | O_CREAT | O_TRUNC, S_IRWXU);
@@ -34,8 +33,6 @@ static void set_up_redirections(scommand sc){
     }
     dup2(fd_1, STDOUT_FILENO);
     close(fd_1);
-    free(redirOUT);
-
   }
 }
 
@@ -57,111 +54,119 @@ static void manual_exec(scommand sc){
 
 void execute_pipeline(pipeline apipe) {
   assert(apipe != NULL);
+
+  // Si el pipeline tiene un solo builtin, lo ejecutamos directamente
   if (builtin_alone(apipe)) {
     builtin_run(pipeline_front(apipe));
     return;
   }
-  
-  if(!pipeline_is_empty(apipe)){
-    
-    if(!pipeline_get_wait(apipe)){ 
-       signal(SIGCHLD,SIG_IGN);
+
+  if (!pipeline_is_empty(apipe)) {
+    if (!pipeline_get_wait(apipe)) { 
+      // Ignorar SIGCHLD si no debemos esperar a los hijos
+      signal(SIGCHLD, SIG_IGN);
     }
 
     unsigned int pl_length = pipeline_length(apipe);
     scommand sc1 = pipeline_front(apipe);
-    pipeline_pop_front(apipe);
 
 
-
-    if(pl_length == 1){
+    // Caso 1: Solo un comando
+    if (pl_length == 1) {
       int pid = fork();
-      if(pid < 0){
+      if (pid < 0) {
         perror("fork failed\n");
         exit(EXIT_FAILURE);
       }
-      if(pid == 0){ // child
-
+      if (pid == 0) {  // Proceso hijo
         set_up_redirections(sc1);
-        
-        if(builtin_is_internal(sc1)){
+        if (builtin_is_internal(sc1)) {
           builtin_run(sc1);
-          return;
+          exit(EXIT_SUCCESS);
         }
-        // si el comando no es interno, lo ejecuto manual
+        // Ejecutar comando externo
         manual_exec(sc1);
-      }
-      else{ // father
-        if(pipeline_get_wait(apipe)){
-          waitpid(pid, NULL, 0);
+      } else {
+        pipeline_pop_front(apipe);  // Proceso padre
+        if (pipeline_get_wait(apipe)) {
+          waitpid(pid, NULL, 0);  // Esperar al hijo
         }
       }
     }
-
+    
+    // Caso 2: Dos comandos en pipeline
     if (pl_length == 2) {
       scommand sc2 = pipeline_front(apipe);
-      pipeline_pop_front(apipe);
       
+
       int pipe_1to2[2];
       if (pipe(pipe_1to2) < 0) {
-          perror("pipe failed");
-          exit(EXIT_FAILURE);
+        perror("pipe failed");
+        exit(EXIT_FAILURE);
       }
 
       int pid1 = fork();
       if (pid1 < 0) {
-          perror("fork failed\n");
+        perror("fork failed\n");
+        exit(EXIT_FAILURE);
+      }
+
+      if (pid1 == 0) {  // Primer hijo (sc1)
+        set_up_redirections(sc1);
+        
+        // Redirigir salida estándar al pipe
+        if (dup2(pipe_1to2[1], STDOUT_FILENO) < 0) {
+          perror("dup2 failed");
           exit(EXIT_FAILURE);
+        }
+        close(pipe_1to2[0]);  // Cerrar extremos de pipe
+        close(pipe_1to2[1]);
+
+        if (builtin_is_internal(sc1)) {
+          builtin_run(sc1);
+          exit(EXIT_SUCCESS);
+        }
+        manual_exec(sc1);  // Ejecutar el primer comando
+        exit(EXIT_FAILURE);  // Si execvp falla
       }
-
-      if (pid1 == 0) { // Primer hijo (sc1)
-          set_up_redirections(sc1);
-          dup2(pipe_1to2[1], STDOUT_FILENO);  // Duplicar salida al pipe
-          close(pipe_1to2[0]);  // Cerrar el extremo de lectura en el hijo
-          close(pipe_1to2[1]);  // Cerrar el extremo de escritura después de duplicar
-
-          if (builtin_is_internal(sc1)) {
-              builtin_run(sc1);
-              exit(EXIT_SUCCESS);
-          } else {
-              manual_exec(sc1);
-          }
-          exit(EXIT_FAILURE);  // Si execvp falla
-      }
-
+      
       int pid2 = fork();
       if (pid2 < 0) {
-          perror("fork failed\n");
+        perror("fork failed\n");
+        exit(EXIT_FAILURE);
+      }
+
+      if (pid2 == 0) {  // Segundo hijo (sc2)
+        set_up_redirections(sc2);
+        
+        // Redirigir entrada estándar desde el pipe
+        if (dup2(pipe_1to2[0], STDIN_FILENO) < 0) {
+          perror("dup2 failed");
           exit(EXIT_FAILURE);
+        }
+        close(pipe_1to2[1]);  // Cerrar extremos de pipe
+        close(pipe_1to2[0]);
+
+        if (builtin_is_internal(sc2)) {
+          builtin_run(sc2);
+          exit(EXIT_SUCCESS);
+        }
+        manual_exec(sc2);  // Ejecutar el segundo comando
+        exit(EXIT_FAILURE);  // Si execvp falla
       }
 
-      if (pid2 == 0) { // Segundo hijo (sc2)
-          set_up_redirections(sc2);
-          dup2(pipe_1to2[0], STDIN_FILENO);  // Duplicar entrada del pipe
-          close(pipe_1to2[1]);  // Cerrar el extremo de escritura en el hijo
-          close(pipe_1to2[0]);  // Cerrar el extremo de lectura después de duplicar
-
-          if (builtin_is_internal(sc2)) {
-              builtin_run(sc2);
-              exit(EXIT_SUCCESS);
-          } else {
-              manual_exec(sc2);
-          }
-          exit(EXIT_FAILURE);  // Si execvp falla
-      }
-
-      // Proceso padre
-      close(pipe_1to2[0]);  // Cerrar extremos de pipe en el padre
+      // Proceso padre cierra los extremos del pipe
+      close(pipe_1to2[0]);
       close(pipe_1to2[1]);
-
+      pipeline_pop_front(apipe);
       if (pipeline_get_wait(apipe)) {
-          waitpid(pid1, NULL, 0);  // Esperar al primer hijo
-          waitpid(pid2, NULL, 0);  // Esperar al segundo hijo
+        waitpid(pid1, NULL, 0);  // Esperar al primer hijo
+        waitpid(pid2, NULL, 0);  // Esperar al segundo hijo
       }
-  }
-
+    }
   }
 }
+
 
 
 
