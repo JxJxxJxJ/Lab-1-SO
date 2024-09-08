@@ -11,42 +11,45 @@
 
 static void handle_carita(scommand sc) { printf(":)\n"); }
 
+
 static void handle_cd(scommand sc) {
   // Planteo dos casos: uno en el que solo se coloca el cd sin dirección y
-  // otro donde se le da una dirección específica.
+  // otro donde se le da una dirección específica
 
   // Si el tamaño del scommand es 1, significa que se trata del cd solo sin
-  // dirección.
+  // dirección
   if (scommand_length(sc) == 1) {
     chdir(getenv("HOME")); // La variable 'HOME' está configurada para apuntar
                            // al directorio personal del usuario actual,
                            // entonces getenv accede al valor de dicha
-                           // variable y me transporta a esa dirección.
+                           // variable y me transporta a esa dirección
   } else { // Si el tamaño del scommand es != 1, significa que el cd viene
-           // acompañado de una dirección.
+           // acompañado de una dirección
     scommand_pop_front(
-        sc); // Popeo el cd para quedarme solamente con la dirección.
+        sc); // Popeo el cd para quedarme solamente con la dirección
     char *path =
-        scommand_to_string(sc); // Guardo la dirección en la variable path.
+        scommand_to_string(sc); // Guardo la dirección en la variable path
     int k = chdir(path); // Intento llegar a la dirección con chdir (caso
-                         // exitoso cuando k == 0).
+                         // exitoso cuando k == 0)
 
-    // Si k == -1, entonces no se puede acceder a la ruta entregada.
+    // Si k == -1, entonces no se puede acceder a la ruta entregada
     if (k == -1) {
       printf("myBash: cd: %s: El archivo o directorio no existe.\n", path);
     }
   }
 }
 
+
 static void handle_exit(scommand sc) {
   printf("¡Adiós!\n");
   exit(EXIT_SUCCESS);
 }
 
+
 static void handle_cmds(scommand sc) {
   printf("Los comandos internos de este bash son:\n");
 
-  // Busco la length del comando mas largo
+  // Busco la length del comando más largo
   size_t max_length = 0;
   for (size_t i = 0; i < CMD_COUNT; i++) {
     size_t name_length = strlen(commands_registry[i].name);
@@ -56,14 +59,23 @@ static void handle_cmds(scommand sc) {
   }
   for (size_t i = 0; i < CMD_COUNT; i++) {
     // %*s significa que el length del string lo doy como un argumento
-    // %-s left-alineo el string, podria pero a mi no me gusta
+    // %-s left-alineo el string, podría pero a mí no me gusta
     printf("%*s : %s\n", (int)max_length, commands_registry[i].name,
            commands_registry[i].data.help);
   }
 }
 
+
 static void handle_help(scommand sc) {
-  printf("«myBash» v1.0, por :(){ :|:& };: (g-01)\n\n");
+  printf("  ███╗   ███╗██╗   ██╗██████╗  █████╗ ███████╗██╗  ██╗    ██╗   ██╗ ██╗    ██████╗  \n");
+  printf("  ████╗ ████║╚██╗ ██╔╝██╔══██╗██╔══██╗██╔════╝██║  ██║    ██║   ██║███║   ██╔═████╗ \n");
+  printf("  ██╔████╔██║ ╚████╔╝ ██████╔╝███████║███████╗███████║    ██║   ██║╚██║   ██║██╔██║ \n");
+  printf("  ██║╚██╔╝██║  ╚██╔╝  ██╔══██╗██╔══██║╚════██║██╔══██║    ╚██╗ ██╔╝ ██║   ████╔╝██║ \n");
+  printf("  ██║ ╚═╝ ██║   ██║   ██████╔╝██║  ██║███████║██║  ██║     ╚████╔╝  ██║██╗╚██████╔╝ \n");
+  printf("  ╚═╝     ╚═╝   ╚═╝   ╚═════╝ ╚═╝  ╚═╝╚══════╝╚═╝  ╚═╝      ╚═══╝   ╚═╝╚═╝ ╚═════╝  \n");
+  printf("╔═══════════════════════════════════════════════════════════════════════════════════╗ \n");
+  printf("║            Está usando la shell codificada por :(){ :|:& };: (grupo 1)            ║ \n");
+  printf("╚═══════════════════════════════════════════════════════════════════════════════════╝ \n\n");          
   printf("Los autores que colaboraron para la creación del mismo son: \n- Juan "
          "Cruz Hermosilla Artico\n- Gaspar Saenz Valiente\n- Exequiel "
          "Trinidad\n- Fernando Cabrera Luque\n\n");
@@ -71,14 +83,14 @@ static void handle_help(scommand sc) {
   handle_cmds(sc);
 }
 
-// Un arreglo global de CMD_ENTRY.
+// Un arreglo global de CMD_ENTRY
 // Este arreglo lleva el registro de todos los comandos builtin de myBash
 // Para agregar un comando al myBash, debo agregar una entrada al arreglo y
-// proveer un puntero a una funcion handle valida
+// proveer un puntero a una funcion handle válida
 CMD_ENTRY commands_registry[CMD_COUNT] = {
     {"cd",
      {handle_cd, "Permite desplazarse entre los directorios del sistema."}},
-    {"help", {handle_help, "Muestra información del mybash."}},
+    {"help", {handle_help, "Muestra información de myBash."}},
     {"exit", {handle_exit, "Es para salir de la sesión."}},
     {":)", {handle_carita, "Printea una carita."}},
     {"cmds",
@@ -109,22 +121,16 @@ static GQueue *init_gq_command_table(void) {
 
 // ------------------------------------------------------------------------
 // | En este punto mi GQueue* command_table deberia tener                 |
-// | los comandos que acepta MyBash                                       |
+// | los comandos que acepta myBash                                       |
 // ------------------------------------------------------------------------
 
-/*
- * Indica si el comando alojado en `cmd` es un comando interno
- *
- * REQUIRES: cmd != NULL
- *
- */
 bool builtin_is_internal(scommand cmd) {
   assert(cmd != NULL);
   bool found = false;
   // Inicializo la gq_command_table para realizar la busqueda ALOCA MEMORIA
   GQueue *gq_command_table = init_gq_command_table();
 
-  // Tomo lo que el scommand cmd tenia al frente (el cd, el help, etc sin sus
+  // Tomo lo que el scommand cmd tenía al frente (el cd, el help, etc. sin sus
   // flags) y armo un string con eso
   char *str_scommand = scommand_front(cmd);
 
@@ -134,22 +140,26 @@ bool builtin_is_internal(scommand cmd) {
     char *name_pointer = (char *)g_queue_peek_nth(gq_command_table, i);
     if (strcmp(name_pointer, str_scommand) == 0) {
       found = true;
-      // printf("El comando es interno. Indx es: %d\n Se leyó generado es:
-      // %s\n", i, scommand_to_string(cmd));
     }
   }
 
-  // if (!found) { // No hace falta imprimirlo. Si no es builtin puede ser
-  // binary
-  //   printf("%s: no se encontró la orden\n", str_scommand);
-  // }
-
-  // Destruyo la gq_command_table con la funcion para liberar cada elemento
+  // Destruyo la gq_command_table con la función para liberar cada elemento
   // (son strings, los libero con free)
   g_queue_free_full(gq_command_table, free);
   return found;
 }
+/*
+ * Indica si el comando alojado en `cmd` es un comando interno
+ *
+ * REQUIRES: cmd != NULL
+ *
+ */
 
+
+bool builtin_alone(pipeline p) {
+  assert(p != NULL);
+  return pipeline_length(p) == 1 && builtin_is_internal(pipeline_front(p));
+}
 /*
  * Indica si el pipeline tiene solo un elemento y si este se corresponde a un
  * comando interno.
@@ -160,25 +170,15 @@ bool builtin_is_internal(scommand cmd) {
  * builtin_alone(p) == pipeline_length(p) == 1 &&
  *                     builtin_is_internal(pipeline_front(p))
  */
-bool builtin_alone(pipeline p) {
-  assert(p != NULL);
-  return pipeline_length(p) == 1 && builtin_is_internal(pipeline_front(p));
-}
 
-/*
- * Ejecuta un comando interno
- *
- * REQUIRES: {builtin_is_internal(cmd)}
- *
- */
+
 void builtin_run(scommand cmd) {
   assert(builtin_is_internal(cmd));
-  // Inicializo la gq_command_table para realizar la busqueda ALOCA MEMORIA
+  // Inicializo la gq_command_table para realizar la busqueda (ALOCA MEMORIA)
   GQueue *gq_command_table = init_gq_command_table();
 
   // Obtengo el nombre del comando
   char *str_scommand = scommand_front(cmd);
-  // printf("El comando leído por builtin run es: %s \n", str_scommand);
 
   // Busco manualmente en la GQueue str_scommand
   int indx = -1;
@@ -193,11 +193,15 @@ void builtin_run(scommand cmd) {
   }
 
   if (indx != -1) {
-    // Ejecuta la funcion del comando con el scomando cmd
+    // Ejecuta la función del comando con el scommand cmd
     commands_registry[indx].data.handler(cmd);
   }
 
-  // printf("El indx devuelto es: %d\n", indx);
-
   g_queue_free_full(gq_command_table, free);
 }
+/*
+ * Ejecuta un comando interno
+ *
+ * REQUIRES: {builtin_is_internal(cmd)}
+ *
+ */
