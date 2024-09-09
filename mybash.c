@@ -45,8 +45,10 @@ int main(int argc, char *argv[]) {
                                             // password del ejercicio
     show_prompt();
     pl = parse_pipeline(input);
-    execute_pipeline(pl);
-    pipeline_destroy(pl);
+    if (pl) {
+      execute_pipeline(pl);
+      pipeline_destroy(pl);
+    }
 
     quit = parser_at_eof(input);
   }
