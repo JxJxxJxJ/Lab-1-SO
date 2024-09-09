@@ -8,26 +8,19 @@
 
 /*
  * ZONA DE SCOMMAND
- Probando la rama remota
  */
 
 struct scommand_s {
-  GQueue *argumentos;
+  GQueue *args;
   char *redir_in;
   char *redir_out;
 };
 
-/*
- * Nuevo `scommand', sin comandos o argumentos y los redirectores vacíos
- *   Returns: nuevo comando simple sin ninguna cadena y redirectores vacíos.
- * Ensures: result != NULL && scommand_is_empty (result) &&
- *  scommand_get_redir_in (result) == NULL &&
- *  scommand_get_redir_out (result) == NULL
- */
+
 scommand scommand_new(void) { // NOTA: ALOCA MEMORIA
   scommand result = malloc(sizeof(*result));
   assert(result != NULL);
-  result->argumentos = g_queue_new();
+  result->args = g_queue_new();
   result->redir_in = NULL;
   result->redir_out = NULL;
   assert(result != NULL);
@@ -36,17 +29,19 @@ scommand scommand_new(void) { // NOTA: ALOCA MEMORIA
   assert(scommand_get_redir_out(result) == NULL);
   return result;
 }
-
 /*
- * Destruye `self'.
- *   self: comando simple a destruir.
- * Requires: self != NULL
- * Ensures: result == NULL
+ * Nuevo `scommand', sin comandos o argumentos y los redirectores vacíos
+ *   Returns: nuevo comando simple sin ninguna cadena y redirectores vacíos.
+ * Ensures: result != NULL && scommand_is_empty (result) &&
+ *  scommand_get_redir_in (result) == NULL &&
+ *  scommand_get_redir_out (result) == NULL
  */
+
+
 scommand scommand_destroy(scommand self) {
   assert(self != NULL);
-  g_queue_free_full(self->argumentos, g_free);
-  self->argumentos = NULL;
+  g_queue_free_full(self->args, g_free);
+  self->args = NULL;
   free(self->redir_in);
   free(self->redir_out);
   free(self);
@@ -54,7 +49,20 @@ scommand scommand_destroy(scommand self) {
   assert(self == NULL);
   return self;
 }
+/*
+ * Destruye `self'.
+ *   self: comando simple a destruir.
+ * Requires: self != NULL
+ * Ensures: result == NULL
+ */
 
+
+void scommand_push_back(scommand self, char *argument) {
+  assert(self != NULL);
+  assert(argument != NULL);
+  g_queue_push_tail(self->args, argument);
+  assert(!scommand_is_empty(self));
+}
 /*
  * Agrega por detrás una cadena a la secuencia de cadenas.
  *   self: comando simple al cual agregarle la cadena.
@@ -62,30 +70,39 @@ scommand scommand_destroy(scommand self) {
  * Requires: self!=NULL && argument!=NULL
  * Ensures: !scommand_is_empty(self)
  */
-void scommand_push_back(scommand self, char *argument) {
-  assert(self != NULL);
-  assert(argument != NULL);
-  g_queue_push_tail(self->argumentos, argument);
-  assert(!scommand_is_empty(self));
-}
 
+
+void scommand_pop_front(scommand self) {
+  assert(self != NULL && !scommand_is_empty(self));
+  // Obtengo el elemento del front
+  char *front_item = g_queue_peek_head(self->args);
+  // Lo saco de la gqueue
+  gboolean b =
+      g_queue_remove(self->args, g_queue_peek_head(self->args));
+  // Lo libero
+  free(front_item);
+  assert(b);
+}
 /*
  * Quita la cadena de adelante de la secuencia de cadenas.
  *   self: comando simple al cual sacarle la cadena del frente.
  * Requires: self!=NULL && !scommand_is_empty(self)
  */
-void scommand_pop_front(scommand self) {
-  assert(self != NULL && !scommand_is_empty(self));
-  // Obtengo el elemento del front
-  char *front_item = g_queue_peek_head(self->argumentos);
-  // Lo saco de la gqueue
-  gboolean b =
-      g_queue_remove(self->argumentos, g_queue_peek_head(self->argumentos));
-  // Lo libero
-  free(front_item);
-  assert(b);
+
+
+void scommand_set_redir_in(scommand self, char *filename) {
+  assert(self != NULL);
+  // Libero por las dudas, porque si ya había algo entonces no lo estoy liberando
+  free(self->redir_in);
+  self->redir_in = filename;
 }
 
+void scommand_set_redir_out(scommand self, char *filename) {
+  assert(self != NULL);
+  // Libero por las dudas, porque si ya había algo entonces no lo estoy liberando
+  free(self->redir_out);
+  self->redir_out = filename;
+}
 /*
  * Define la redirección de entrada (salida).
  *   self: comando simple al cual establecer la redirección de entrada (salida).
@@ -93,21 +110,13 @@ void scommand_pop_front(scommand self) {
  *     o NULL si no se quiere redirección. El TAD se apropia de la referencia.
  * Requires: self!=NULL
  */
-void scommand_set_redir_in(scommand self, char *filename) {
-  assert(self != NULL);
-  // Libero por las dudas, porque si ya habia algo entonces no lo estoy
-  // liberando
-  free(self->redir_in);
-  self->redir_in = filename;
-}
-void scommand_set_redir_out(scommand self, char *filename) {
-  assert(self != NULL);
-  // Libero por las dudas, porque si ya habia algo entonces no lo estoy
-  // liberando
-  free(self->redir_out);
-  self->redir_out = filename;
-}
 
+/* Proyectores */
+
+bool scommand_is_empty(const scommand self) {
+  assert(self != NULL);
+  return g_queue_get_length(self->args) == 0u;
+}
 /*
  * Indica si la secuencia de cadenas tiene longitud 0.
  *   self: comando simple a decidir si está vacío.
@@ -115,12 +124,14 @@ void scommand_set_redir_out(scommand self, char *filename) {
  * Requires: self!=NULL
  */
 
-/* Proyectores */
-bool scommand_is_empty(const scommand self) {
-  assert(self != NULL);
-  return g_queue_get_length(self->argumentos) == 0u;
-}
 
+unsigned int scommand_length(const scommand self) {
+  assert(self != NULL);
+  // Uso self->length en vez de scommand_length(self) para evitar infinita recursión
+  assert((g_queue_get_length(self->args) == 0) ==
+         scommand_is_empty(self));
+  return g_queue_get_length(self->args);
+}
 /*
  * Da la longitud de la secuencia cadenas que contiene el comando simple.
  *   self: comando simple a medir.
@@ -129,15 +140,15 @@ bool scommand_is_empty(const scommand self) {
  * Ensures: (scommand_length(self)==0) == scommand_is_empty(self)
  *
  */
-unsigned int scommand_length(const scommand self) {
-  assert(self != NULL);
-  // Uso self -> length en vez de scommand_length(self)
-  // para evitar infinita recursion
-  assert((g_queue_get_length(self->argumentos) == 0) ==
-         scommand_is_empty(self));
-  return g_queue_get_length(self->argumentos);
-}
 
+
+char *scommand_front(const scommand self) {
+  assert(self != NULL);
+  assert(!scommand_is_empty(self));
+  char *result = g_queue_peek_head(self->args);
+  assert(result != NULL);
+  return result;
+}
 /*
  * Toma la cadena de adelante de la secuencia de cadenas.
  *   self: comando simple al cual tomarle la cadena del frente.
@@ -147,14 +158,16 @@ unsigned int scommand_length(const scommand self) {
  * Requires: self!=NULL && !scommand_is_empty(self)
  * Ensures: result!=NULL
  */
-char *scommand_front(const scommand self) {
-  assert(self != NULL);
-  assert(!scommand_is_empty(self));
-  char *result = g_queue_peek_head(self->argumentos);
-  assert(result != NULL);
-  return result;
-}
 
+
+char *scommand_get_redir_in(const scommand self) {
+  assert(self != NULL);
+  return self->redir_in;
+}
+char *scommand_get_redir_out(const scommand self) {
+  assert(self != NULL);
+  return self->redir_out;
+}
 /*
  * Obtiene los nombres de archivos a donde redirigir la entrada (salida).
  *   self: comando simple a decidir si está vacío.
@@ -162,36 +175,16 @@ char *scommand_front(const scommand self) {
  *  o NULL si no está redirigida.
  * Requires: self!=NULL
  */
-char *scommand_get_redir_in(const scommand self) {
-  assert(self != NULL);
-  return self->redir_in;
-}
 
-char *scommand_get_redir_out(const scommand self) {
-  assert(self != NULL);
-  return self->redir_out;
-}
 
-/* Preety printer para hacer debugging/logging.
- * Genera una representación del comando simple en un string (aka "serializar")
- *   self: comando simple a convertir.
- *   Returns: un string con la representación del comando simple similar
- *     a lo que se escribe en un shell. El llamador es dueño del string
- *     resultante.
- * Requires: self!=NULL
- * Ensures: scommand_is_empty(self) ||
- *   scommand_get_redir_in(self)==NULL || scommand_get_redir_out(self)==NULL ||
- *   strlen(result)>0
- */
 char *scommand_to_string(const scommand self) {
   assert(self != NULL);
-  // Creo un GString vacio
+  // Creo un GString vacío
   GString *gstr = g_string_new(NULL);
-  // Itero sobre self->argumentos y voy agregando los comandos al string
-  // sin romper la fucking abstraccion
-  for (uint i = 0; i < g_queue_get_length(self->argumentos); i++) {
-    gstr = g_string_append(gstr, g_queue_peek_nth(self->argumentos, i));
-    if (i != g_queue_get_length(self->argumentos) - 1) {
+  // Itero sobre self->args y voy agregando los comandos al string sin romper la abstracción
+  for (uint i = 0; i < g_queue_get_length(self->args); i++) {
+    gstr = g_string_append(gstr, g_queue_peek_nth(self->args, i));
+    if (i != g_queue_get_length(self->args) - 1) {
       gstr = g_string_append_c(gstr, ' ');
     }
   }
@@ -204,24 +197,43 @@ char *scommand_to_string(const scommand self) {
     gstr = g_string_append(gstr, " > ");
     gstr = g_string_append(gstr, self->redir_out);
   }
-  // Libera la memoria de la estructura del GString gstr
-  // y me devuelve la data adentro como char*
+  // Libera la memoria de la estructura del GString gstr y me devuelve la data adentro como char*
   char *result = g_string_free_and_steal(gstr);
   assert(scommand_is_empty(self) || scommand_get_redir_in(self) == NULL ||
          scommand_get_redir_out(self) == NULL || strlen(result) > 0);
   return result;
 }
+/* Preety printer para hacer debugging/logging.
+ * Genera una representación del comando simple en un string (aka "serializar")
+ *   self: comando simple a convertir.
+ *   Returns: un string con la representación del comando simple similar
+ *     a lo que se escribe en un shell. El llamador es dueño del string
+ *     resultante.
+ * Requires: self!=NULL
+ * Ensures: scommand_is_empty(self) ||
+ *   scommand_get_redir_in(self)==NULL || scommand_get_redir_out(self)==NULL ||
+ *   strlen(result)>0
+ */
+
 
 /*
  * ZONA DE PIPELINE
  */
 
 struct pipeline_s {
-  GQueue *scomandos;
-  bool esta_en_primer_plano;
+  GQueue *scommands;
+  bool is_in_foreground;
   size_t length;
 };
 
+
+pipeline pipeline_new(void) {
+  pipeline result = malloc(sizeof(*result));
+  result->scommands = g_queue_new();
+  result->is_in_foreground = true;
+  result->length = 0u;
+  return result;
+}
 /*
  * Nuevo `pipeline', sin comandos simples y establecido para que espere.
  *   Returns: nuevo pipeline sin comandos simples y que espera.
@@ -229,14 +241,19 @@ struct pipeline_s {
  *  && pipeline_is_empty(result)
  *  && pipeline_get_wait(result)
  */
-pipeline pipeline_new(void) {
-  pipeline result = malloc(sizeof(*result));
-  result->scomandos = g_queue_new();
-  result->esta_en_primer_plano = true;
-  result->length = 0u;
-  return result;
-}
 
+
+// Wrapper para castear scommand_destroy a GDestroyNotify
+static void scommand_destroy_wrapper(void *data) {
+  scommand_destroy((scommand)data);
+}
+// NOTA: Si a alguien se le ocurre otra forma sin romper la abstracción acá, cambielo
+pipeline pipeline_destroy(pipeline self) {
+  assert(self != NULL);
+  g_queue_free_full(self->scommands, (GDestroyNotify)scommand_destroy_wrapper);
+  free(self);
+  return NULL;
+}
 /*
  * Destruye `self'.
  *   self: tubería a destruir.
@@ -244,22 +261,15 @@ pipeline pipeline_new(void) {
  * Ensures: result == NULL <-- No deberia ser self == NULL?
  */
 
-// Wrapper para castear scommand_destroy a GDestroyNotify
-static void scommand_destroy_wrapper(void *data) {
-  scommand_destroy((scommand)data);
-}
-
-// NOTA: Si a alguien se le ocurre otra forma sin romper la abstraccion aca
-// cambielo
-pipeline pipeline_destroy(pipeline self) {
-  assert(self != NULL);
-  g_queue_free_full(self->scomandos, (GDestroyNotify)scommand_destroy_wrapper);
-  free(self);
-  return NULL;
-}
-
 /* Modificadores */
 
+void pipeline_push_back(pipeline self, scommand sc) {
+  assert(self != NULL);
+  assert(sc != NULL);
+  g_queue_push_tail(self->scommands, sc);
+  self->length++;
+  assert(!pipeline_is_empty(self));
+}
 /*
  * Agrega por detrás un comando simple a la secuencia.
  *   self: pipeline al cual agregarle el comando simple.
@@ -267,52 +277,54 @@ pipeline pipeline_destroy(pipeline self) {
  * Requires: self!=NULL && sc!=NULL
  * Ensures: !pipeline_is_empty(self)
  */
-void pipeline_push_back(pipeline self, scommand sc) {
-  assert(self != NULL);
-  assert(sc != NULL);
-  g_queue_push_tail(self->scomandos, sc);
-  self->length++;
-  assert(!pipeline_is_empty(self));
-}
 
+
+void pipeline_pop_front(pipeline self) {
+  assert(self != NULL);
+  assert(!pipeline_is_empty(self));
+  // g_queue_pop_head popea el primer elemento y lo devuelve como data
+  scommand killme = g_queue_pop_head(self->scommands);
+  scommand_destroy(killme);
+  self->length--;
+}
 /*
  * Quita el comando simple de adelante de la secuencia.
  *   self: pipeline al cual sacarle el comando simple del frente.
  *      Destruye el comando extraido.
  * Requires: self!=NULL && !pipeline_is_empty(self)
  */
-void pipeline_pop_front(pipeline self) {
-  assert(self != NULL);
-  assert(!pipeline_is_empty(self));
-  // g_queue_pop_head popea el primer elemento y lo devuelve como data
-  scommand killme = g_queue_pop_head(self->scomandos);
-  scommand_destroy(killme);
-  self->length--;
-}
 
+
+void pipeline_set_wait(pipeline self, const bool w) {
+  assert(self != NULL);
+  self->is_in_foreground = w;
+}
 /*
  * Define si el pipeline tiene que esperar o no.
  *   self: pipeline que quiere ser establecido en su atributo de espera.
  * Requires: self!=NULL
  */
-void pipeline_set_wait(pipeline self, const bool w) {
-  assert(self != NULL);
-  self->esta_en_primer_plano = w;
-}
 
 /* Proyectores */
 
+bool pipeline_is_empty(const pipeline self) {
+  assert(self != NULL);
+  return self->length == 0u;
+}
 /*
  * Indica si la secuencia de comandos simples tiene longitud 0.
  *   self: pipeline a decidir si está vacío.
  *   Returns: ¿Está vacío de comandos simples el pipeline?
  * Requires: self!=NULL
  */
-bool pipeline_is_empty(const pipeline self) {
-  assert(self != NULL);
-  return self->length == 0u;
-}
 
+
+unsigned int pipeline_length(const pipeline self) {
+  assert(self != NULL);
+  // Uso self->length en vez de pipeline_length para evitar recursión infinita
+  assert((self->length == 0) == pipeline_is_empty(self));
+  return self->length;
+}
 /*
  * Da la longitud de la secuencia de comandos simples.
  *   self: pipeline a medir.
@@ -321,13 +333,15 @@ bool pipeline_is_empty(const pipeline self) {
  * Ensures: (pipeline_length(self)==0) == pipeline_is_empty(self)
  *
  */
-unsigned int pipeline_length(const pipeline self) {
-  assert(self != NULL);
-  // Uso self->length en vez de pipeline_length para evitar recursion infinita
-  assert((self->length == 0) == pipeline_is_empty(self));
-  return self->length;
-}
 
+
+scommand pipeline_front(const pipeline self) {
+  assert(self != NULL);
+  assert(!pipeline_is_empty(self));
+  scommand result = g_queue_peek_head(self->scommands);
+  assert(result != NULL);
+  return result;
+}
 /*
  * Devuelve el comando simple de adelante de la secuencia.
  *   self: pipeline al cual consultar cual es el comando simple del frente.
@@ -338,25 +352,44 @@ unsigned int pipeline_length(const pipeline self) {
  * Requires: self!=NULL && !pipeline_is_empty(self)
  * Ensures: result!=NULL
  */
-scommand pipeline_front(const pipeline self) {
-  assert(self != NULL);
-  assert(!pipeline_is_empty(self));
-  scommand result = g_queue_peek_head(self->scomandos);
-  assert(result != NULL);
-  return result;
-}
 
+
+bool pipeline_get_wait(const pipeline self) {
+  assert(self != NULL);
+  return self->is_in_foreground;
+}
 /*
  * Consulta si el pipeline tiene que esperar o no.
  *   self: pipeline a decidir si hay que esperar.
  *   Returns: ¿Hay que esperar en el pipeline self?
  * Requires: self!=NULL
  */
-bool pipeline_get_wait(const pipeline self) {
-  assert(self != NULL);
-  return self->esta_en_primer_plano;
-}
 
+
+char *pipeline_to_string(const pipeline self) {
+  assert(self != NULL);
+  // Creo un GString vacío
+  GString *gstr = g_string_new(NULL);
+  // Itero sobre self->scommands y voy agregando los comandos al string sin romper la abstracción
+  for (guint i = 0; i < g_queue_get_length(self->scommands); i++) {
+    // Añado la representación del scommand en formato de string
+    gstr = g_string_append(
+        gstr, scommand_to_string(g_queue_peek_nth(self->scommands, i)));
+    if (i != g_queue_get_length(self->scommands) - 1) {
+      gstr = g_string_append(gstr, " | ");
+    }
+  }
+  // Le meto un & si no hay que esperar a que la pipeline termine (segundo plano) y que al menos haya un comando por correr
+  if (!(self->is_in_foreground) &&
+      g_queue_get_length(self->scommands) >= 1) {
+    gstr = g_string_append(gstr, " &");
+  }
+  // Libera la memoria de la estructura del GString gstr y me devuelve la data adentro como char*
+  char *result = g_string_free_and_steal(gstr);
+  assert(pipeline_is_empty(self) || pipeline_get_wait(self) ||
+         strlen(result) > 0);
+  return result;
+}
 /* Pretty printer para hacer debugging/logging.
  * Genera una representación del pipeline en una cadena (aka "serializar").
  *   self: pipeline a convertir.
@@ -366,30 +399,3 @@ bool pipeline_get_wait(const pipeline self) {
  * Ensures: pipeline_is_empty(self) || pipeline_get_wait(self) ||
  * strlen(result)>0
  */
-char *pipeline_to_string(const pipeline self) {
-  assert(self != NULL);
-  // Creo un GString vacio
-  GString *gstr = g_string_new(NULL);
-  // Itero sobre self->scomandos y voy agregando los comandos al string
-  // sin romper la fucking abstraccion
-  for (guint i = 0; i < g_queue_get_length(self->scomandos); i++) {
-    // añado la representacion del scomando en formato de string
-    gstr = g_string_append(
-        gstr, scommand_to_string(g_queue_peek_nth(self->scomandos, i)));
-    if (i != g_queue_get_length(self->scomandos) - 1) {
-      gstr = g_string_append(gstr, " | ");
-    }
-  }
-  // Le meto un & si no hay que esperar a que la pipeline termine (segundo
-  // plano) y que al menos haya un comando por correr
-  if (!(self->esta_en_primer_plano) &&
-      g_queue_get_length(self->scomandos) >= 1) {
-    gstr = g_string_append(gstr, " &");
-  }
-  // Libera la memoria de la estructura del GString gstr
-  // y me devuelve la data adentro como char*
-  char *result = g_string_free_and_steal(gstr);
-  assert(pipeline_is_empty(self) || pipeline_get_wait(self) ||
-         strlen(result) > 0);
-  return result;
-}

@@ -22,11 +22,11 @@ static void show_prompt(void) {
   print_colored("", NEGRO2FG, NULL);
   print_colored(g_get_current_dir(), BLANCOFG, NEGRO2BG);
   print_colored("", NEGRO2FG, NEGRO2BG);
-  // Para printear icono de directorio
+  // Para printear ícono de directorio
   print_colored("", AZULFG, NEGRO2BG);
   print_colored("", NEGRO2FG, AZULBG);
   print_colored("", AZULFG, NULL);
-  // Salto de linea
+  // Salto de línea
   print_colored("\n", AZULFG, NULL);
   print_colored("╰─", NEGRO2FG, NULL);
   print_colored("", VERDE2FG, NULL);
@@ -35,52 +35,19 @@ static void show_prompt(void) {
 }
 
 int main(int argc, char *argv[]) {
-
-  // ---------------------------------------------------------
-  // | Zona para debugear execute codigo temporal                   |
-  // ---------------------------------------------------------
-  // while (true) {
-  //   show_prompt();
-  //   // Test de como parseo un scommand
-  //   Parser parser = parser_new(stdin);
-  //   pipeline sc = parse_pipeline(parser);
-  //   execute_pipeline(sc);
-  //   pipeline_destroy(sc);
-  // }
-  // ---------------------------------------------------------
-  // | Zona para debugear, codigo temporal                   |
-  // ---------------------------------------------------------
-  // show_prompt();
-  // // Test de como parseo un scommand
-  // Parser parser = parser_new(stdin);
-  // pipeline pl = parse_pipeline(parser);
-  // pipeline_destroy(pl);
-
-  // Test de como parseo un pipeline
-  // ...
-
-  // ---------------------------------------------------------
-  // | Abajo esta el codigo que nos dieron                   |
-  // ---------------------------------------------------------
   pipeline pl;
   Parser input;
   bool quit = false;
 
   input = parser_new(stdin);
   while (!quit) {
-    ping_pong_loop("CharcoalHippopotamus"); // Obfuscated solucionado, tiene la
-                                            // password del ejercicio
+    ping_pong_loop("CharcoalHippopotamus"); // Obfuscated solucionado, tiene la password del ejercicio
     show_prompt();
     pl = parse_pipeline(input);
     execute_pipeline(pl);
     pipeline_destroy(pl);
 
-    /* Hay que salir luego de ejecutar? */
     quit = parser_at_eof(input);
-    /*
-     * COMPLETAR
-     *
-     */
   }
   parser_destroy(input);
   input = NULL;
