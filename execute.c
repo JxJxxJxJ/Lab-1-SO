@@ -1,7 +1,6 @@
 #include "execute.h"
 #include "builtin.h"
 #include "command.h"
-#include "tests/syscall_mock.h"
 #include <assert.h>
 #include <fcntl.h>
 #include <glib.h>
@@ -9,6 +8,9 @@
 #include <stdio.h>
 #include <sys/wait.h>
 #include <unistd.h>
+
+// ESTO VA AL FINAL SI O SI O SE ROMPE
+#include "tests/syscall_mock.h"
 
 static void execute_external_command(scommand sc) {
   // Precondiciones
