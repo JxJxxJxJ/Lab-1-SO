@@ -565,8 +565,8 @@ int ping_pong_loop(char *password) {
   return 0;
 }
 
-// // Para solucionar el secret tenia que correr este main, pero para poder
-// hacer make del proyecto comento esto asi no tengo errores de varios main int
+// Para solucionar el secret tenía que correr este main, pero para poder
+// hacer make del proyecto comento esto así no tengo errores de varios main int
 // main(void) {
 
 //   ping_pong_loop("CharcoalHippopotamus");

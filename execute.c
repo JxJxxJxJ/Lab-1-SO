@@ -214,3 +214,10 @@ void execute_pipeline(pipeline apipe) {
     }
   }
 }
+/*
+ * Ejecuta un pipeline, identificando comandos internos, forkeando, y
+ *   redirigiendo la entrada y salida. puede modificar `apipe' en el proceso
+ *   de ejecución.
+ *   apipe: pipeline a ejecutar
+ * Requires: apipe!=NULL
+ */

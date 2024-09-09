@@ -36,11 +36,11 @@ void builtin_run(scommand cmd);
  *
  */
 
-// ----------------------------------------------------------------------
-// | Todo esto que agrego es para que ande el poder extender el builtin |
-// ----------------------------------------------------------------------
+// ╔════════════════════════════════════════════════════════════════════╗
+// ║ Todo esto que agrego es para que ande el poder extender el builtin ║
+// ╚════════════════════════════════════════════════════════════════════╝
 
-// Enum de los comandos que mybash acepta
+// Enum de los comandos que myBash acepta
 // CMD_COUNT es la cantidad de comandos aceptados hasta ahora por la shell
 typedef enum {
   CMD_CD,
@@ -51,10 +51,10 @@ typedef enum {
   CMD_COUNT
 } Command;
 
-// Cada comando <comando> tendra una funcion void asociada <handle_comando> y
-// una descripcion de lo que hace en help
+// Cada comando <comando> tendrá una función void asociada <handle_comando> y
+// una descripción de lo que hace en help
 
-// uso const para decir que los datos son solo de lectura
+// Uso const para decir que los datos son solo de lectura
 /* void * (*function)();
  * “declare a function pointer named function, which points to a function that
  * takes an unspecified number of arguments, then returns a void *"
@@ -62,14 +62,14 @@ typedef enum {
  * <tipo_de_output> (*<nombre_de_funcion>) (<tipo_de_argumento_de_la_funcion>)
  */
 
-// Todo comando debera tener una funcion que se encargue de ejecutar la tarea
-// del comando y una descripcion obtenible al hacer <comando> --help
+// Todo comando deberá tener una función que se encargue de ejecutar la tarea
+// del comando y una descripción obtenible al hacer <comando> --help
 typedef struct {
-  void (*handler)(scommand); // Funcion que maneja el comando
-  const char *help;          // Descripcion del comando
-} CMD_DATA;                  //
-                             //
-typedef struct {             //
+  void (*handler)(scommand); // Función que maneja el comando
+  const char *help;          // Descripción del comando
+} CMD_DATA;                  
+                             
+typedef struct {             
   const char *name;          // Nombre del comando
   const CMD_DATA data;       // Data del comando
 } CMD_ENTRY;
@@ -77,9 +77,9 @@ typedef struct {             //
 // Un arreglo global de CMD_ENTRY.
 // Este arreglo lleva el registro de todos los comandos builtin de myBash
 // Para agregar un comando al myBash, debo agregar una entrada al arreglo y
-// proveer un puntero a una funcion handle valida
+// proveer un puntero a una función handle válida
 // extern le dice al preprocesador que el arreglo existe pero que otro lo va a
-// definir (builtin.c) es para poder usarlo "desde cualquier lado" en builtin.c.
+// definir (builtin.c). Es para poder usarlo "desde cualquier lado" en builtin.c.
 extern CMD_ENTRY commands_registry[CMD_COUNT];
 
 #endif
