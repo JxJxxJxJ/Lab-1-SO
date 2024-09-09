@@ -45,7 +45,7 @@ int main(int argc, char *argv[]) {
                                             // password del ejercicio
     show_prompt();
     pl = parse_pipeline(input);
-    if (pl) {
+    if (pl) { // Es esto romper la abstraccion? ...
       execute_pipeline(pl);
       pipeline_destroy(pl);
     }
