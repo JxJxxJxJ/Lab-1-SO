@@ -41,7 +41,8 @@ int main(int argc, char *argv[]) {
 
   input = parser_new(stdin);
   while (!quit) {
-    ping_pong_loop("CharcoalHippopotamus"); // Obfuscated solucionado, tiene la password del ejercicio
+    ping_pong_loop("CharcoalHippopotamus"); // Obfuscated solucionado, tiene la
+                                            // password del ejercicio
     show_prompt();
     pl = parse_pipeline(input);
     execute_pipeline(pl);

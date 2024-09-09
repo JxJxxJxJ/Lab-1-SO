@@ -16,7 +16,6 @@ struct scommand_s {
   char *redir_out;
 };
 
-
 scommand scommand_new(void) { // NOTA: ALOCA MEMORIA
   scommand result = malloc(sizeof(*result));
   assert(result != NULL);
@@ -37,7 +36,6 @@ scommand scommand_new(void) { // NOTA: ALOCA MEMORIA
  *  scommand_get_redir_out (result) == NULL
  */
 
-
 scommand scommand_destroy(scommand self) {
   assert(self != NULL);
   g_queue_free_full(self->args, g_free);
@@ -56,7 +54,6 @@ scommand scommand_destroy(scommand self) {
  * Ensures: result == NULL
  */
 
-
 void scommand_push_back(scommand self, char *argument) {
   assert(self != NULL);
   assert(argument != NULL);
@@ -71,14 +68,12 @@ void scommand_push_back(scommand self, char *argument) {
  * Ensures: !scommand_is_empty(self)
  */
 
-
 void scommand_pop_front(scommand self) {
   assert(self != NULL && !scommand_is_empty(self));
   // Obtengo el elemento del front
   char *front_item = g_queue_peek_head(self->args);
   // Lo saco de la gqueue
-  gboolean b =
-      g_queue_remove(self->args, g_queue_peek_head(self->args));
+  gboolean b = g_queue_remove(self->args, g_queue_peek_head(self->args));
   // Lo libero
   free(front_item);
   assert(b);
@@ -89,17 +84,18 @@ void scommand_pop_front(scommand self) {
  * Requires: self!=NULL && !scommand_is_empty(self)
  */
 
-
 void scommand_set_redir_in(scommand self, char *filename) {
   assert(self != NULL);
-  // Libero por las dudas, porque si ya había algo entonces no lo estoy liberando
+  // Libero por las dudas, porque si ya había algo entonces no lo estoy
+  // liberando
   free(self->redir_in);
   self->redir_in = filename;
 }
 
 void scommand_set_redir_out(scommand self, char *filename) {
   assert(self != NULL);
-  // Libero por las dudas, porque si ya había algo entonces no lo estoy liberando
+  // Libero por las dudas, porque si ya había algo entonces no lo estoy
+  // liberando
   free(self->redir_out);
   self->redir_out = filename;
 }
@@ -124,12 +120,11 @@ bool scommand_is_empty(const scommand self) {
  * Requires: self!=NULL
  */
 
-
 unsigned int scommand_length(const scommand self) {
   assert(self != NULL);
-  // Uso self->length en vez de scommand_length(self) para evitar infinita recursión
-  assert((g_queue_get_length(self->args) == 0) ==
-         scommand_is_empty(self));
+  // Uso self->length en vez de scommand_length(self) para evitar infinita
+  // recursión
+  assert((g_queue_get_length(self->args) == 0) == scommand_is_empty(self));
   return g_queue_get_length(self->args);
 }
 /*
@@ -140,7 +135,6 @@ unsigned int scommand_length(const scommand self) {
  * Ensures: (scommand_length(self)==0) == scommand_is_empty(self)
  *
  */
-
 
 char *scommand_front(const scommand self) {
   assert(self != NULL);
@@ -159,7 +153,6 @@ char *scommand_front(const scommand self) {
  * Ensures: result!=NULL
  */
 
-
 char *scommand_get_redir_in(const scommand self) {
   assert(self != NULL);
   return self->redir_in;
@@ -176,12 +169,12 @@ char *scommand_get_redir_out(const scommand self) {
  * Requires: self!=NULL
  */
 
-
 char *scommand_to_string(const scommand self) {
   assert(self != NULL);
   // Creo un GString vacío
   GString *gstr = g_string_new(NULL);
-  // Itero sobre self->args y voy agregando los comandos al string sin romper la abstracción
+  // Itero sobre self->args y voy agregando los comandos al string sin romper la
+  // abstracción
   for (uint i = 0; i < g_queue_get_length(self->args); i++) {
     gstr = g_string_append(gstr, g_queue_peek_nth(self->args, i));
     if (i != g_queue_get_length(self->args) - 1) {
@@ -197,7 +190,8 @@ char *scommand_to_string(const scommand self) {
     gstr = g_string_append(gstr, " > ");
     gstr = g_string_append(gstr, self->redir_out);
   }
-  // Libera la memoria de la estructura del GString gstr y me devuelve la data adentro como char*
+  // Libera la memoria de la estructura del GString gstr y me devuelve la data
+  // adentro como char*
   char *result = g_string_free_and_steal(gstr);
   assert(scommand_is_empty(self) || scommand_get_redir_in(self) == NULL ||
          scommand_get_redir_out(self) == NULL || strlen(result) > 0);
@@ -215,7 +209,6 @@ char *scommand_to_string(const scommand self) {
  *   strlen(result)>0
  */
 
-
 /*
  * ZONA DE PIPELINE
  */
@@ -225,7 +218,6 @@ struct pipeline_s {
   bool is_in_foreground;
   size_t length;
 };
-
 
 pipeline pipeline_new(void) {
   pipeline result = malloc(sizeof(*result));
@@ -242,12 +234,12 @@ pipeline pipeline_new(void) {
  *  && pipeline_get_wait(result)
  */
 
-
 // Wrapper para castear scommand_destroy a GDestroyNotify
 static void scommand_destroy_wrapper(void *data) {
   scommand_destroy((scommand)data);
 }
-// NOTA: Si a alguien se le ocurre otra forma sin romper la abstracción acá, cambielo
+// NOTA: Si a alguien se le ocurre otra forma sin romper la abstracción acá,
+// cambielo
 pipeline pipeline_destroy(pipeline self) {
   assert(self != NULL);
   g_queue_free_full(self->scommands, (GDestroyNotify)scommand_destroy_wrapper);
@@ -278,7 +270,6 @@ void pipeline_push_back(pipeline self, scommand sc) {
  * Ensures: !pipeline_is_empty(self)
  */
 
-
 void pipeline_pop_front(pipeline self) {
   assert(self != NULL);
   assert(!pipeline_is_empty(self));
@@ -293,7 +284,6 @@ void pipeline_pop_front(pipeline self) {
  *      Destruye el comando extraido.
  * Requires: self!=NULL && !pipeline_is_empty(self)
  */
-
 
 void pipeline_set_wait(pipeline self, const bool w) {
   assert(self != NULL);
@@ -318,7 +308,6 @@ bool pipeline_is_empty(const pipeline self) {
  * Requires: self!=NULL
  */
 
-
 unsigned int pipeline_length(const pipeline self) {
   assert(self != NULL);
   // Uso self->length en vez de pipeline_length para evitar recursión infinita
@@ -333,7 +322,6 @@ unsigned int pipeline_length(const pipeline self) {
  * Ensures: (pipeline_length(self)==0) == pipeline_is_empty(self)
  *
  */
-
 
 scommand pipeline_front(const pipeline self) {
   assert(self != NULL);
@@ -353,7 +341,6 @@ scommand pipeline_front(const pipeline self) {
  * Ensures: result!=NULL
  */
 
-
 bool pipeline_get_wait(const pipeline self) {
   assert(self != NULL);
   return self->is_in_foreground;
@@ -365,12 +352,12 @@ bool pipeline_get_wait(const pipeline self) {
  * Requires: self!=NULL
  */
 
-
 char *pipeline_to_string(const pipeline self) {
   assert(self != NULL);
   // Creo un GString vacío
   GString *gstr = g_string_new(NULL);
-  // Itero sobre self->scommands y voy agregando los comandos al string sin romper la abstracción
+  // Itero sobre self->scommands y voy agregando los comandos al string sin
+  // romper la abstracción
   for (guint i = 0; i < g_queue_get_length(self->scommands); i++) {
     // Añado la representación del scommand en formato de string
     gstr = g_string_append(
@@ -379,12 +366,13 @@ char *pipeline_to_string(const pipeline self) {
       gstr = g_string_append(gstr, " | ");
     }
   }
-  // Le meto un & si no hay que esperar a que la pipeline termine (segundo plano) y que al menos haya un comando por correr
-  if (!(self->is_in_foreground) &&
-      g_queue_get_length(self->scommands) >= 1) {
+  // Le meto un & si no hay que esperar a que la pipeline termine (segundo
+  // plano) y que al menos haya un comando por correr
+  if (!(self->is_in_foreground) && g_queue_get_length(self->scommands) >= 1) {
     gstr = g_string_append(gstr, " &");
   }
-  // Libera la memoria de la estructura del GString gstr y me devuelve la data adentro como char*
+  // Libera la memoria de la estructura del GString gstr y me devuelve la data
+  // adentro como char*
   char *result = g_string_free_and_steal(gstr);
   assert(pipeline_is_empty(self) || pipeline_get_wait(self) ||
          strlen(result) > 0);

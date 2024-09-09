@@ -15,7 +15,8 @@ scommand parse_scommand(Parser p) {
   // Tomo un parser p y debo devolver un scommand
   scommand sc = scommand_new(); // ALOCA MEMORIA
 
-  // Leo los argumentos uno por uno y los pongo donde haya que ponerlos en el objeto scommand
+  // Leo los argumentos uno por uno y los pongo donde haya que ponerlos en el
+  // objeto scommand
   arg_kind_t tipo_de_argumento;
   char *argumento = NULL;
 
@@ -42,7 +43,6 @@ scommand parse_scommand(Parser p) {
   }
   return sc;
 }
-
 
 pipeline parse_pipeline(Parser p) {
   // Precondiciones
