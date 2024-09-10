@@ -1,6 +1,5 @@
 #include "builtin.h"
 #include "command.h"
-#include "tests/syscall_mock.h"
 #include <assert.h>
 #include <glib.h>
 #include <stdbool.h>
@@ -8,6 +7,9 @@
 #include <stdlib.h>
 #include <string.h>
 #include <unistd.h> //chdir
+
+// AGREGO PORQUE SI NO NO ANDA
+#include "tests/syscall_mock.h"
 
 static void handle_carita(scommand sc) { printf(":)\n"); }
 

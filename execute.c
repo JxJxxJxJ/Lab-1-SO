@@ -31,7 +31,8 @@ static void execute_external_command(scommand sc) {
   // Seteo de redirección de la entrada estándar
   char *redirIN = scommand_get_redir_in(sc);
   if (redirIN != NULL) {
-    int fd = open(redirIN, O_RDONLY); // Abre el archivo en modo lectura
+    int fd =
+        open(redirIN, O_RDONLY, S_IRUSR); // Abre el archivo en modo lectura
     if (fd == -1) {
       fprintf(stderr, "Error al abrir el archivo de input: %s\n", redirIN);
       exit(EXIT_FAILURE);
