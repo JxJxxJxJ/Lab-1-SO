@@ -1,10 +1,9 @@
+#include "parsing.h"
+#include "command.h"
+#include "parser.h"
 #include <assert.h>
 #include <stdbool.h>
 #include <stdlib.h>
-
-#include "command.h"
-#include "parser.h"
-#include "parsing.h"
 
 static scommand parse_scommand(Parser p) {
   // Requiero y ensuro lo mismo que en parse_pipeline (equivalente)
@@ -14,32 +13,45 @@ static scommand parse_scommand(Parser p) {
   // Tomo un parser p y debo devolver un scommand
   scommand sc = scommand_new(); // ALOCA MEMORIA
 
-  // Leo los argumentos uno por uno y los pongo donde haya que ponerlos en el
+  // Leo los args uno por uno y los pongo donde haya que ponerlos en el
   // objeto scommand
-  arg_kind_t tipo_de_argumento;
-  char *argumento = NULL;
+  arg_kind_t arg_type;
+  char *arg = NULL;
 
   // Parseo hasta el final del archivo
   while (!parser_at_eof(p)) {
-    argumento = parser_next_argument(p, &tipo_de_argumento);
-    if (argumento == NULL) {
+    arg = parser_next_argument(p, &arg_type);
+
+    if (arg == NULL) {
       break;
     }
-    if (argumento != NULL) {
-      switch (tipo_de_argumento) {
+
+    if (arg != NULL) {
+      switch (arg_type) {
       case ARG_NORMAL:
-        scommand_push_back(sc, argumento);
+        scommand_push_back(sc, arg);
         break;
       case ARG_INPUT:
-        scommand_set_redir_in(sc, argumento);
+        scommand_set_redir_in(sc, arg);
         break;
       case ARG_OUTPUT:
-        scommand_set_redir_out(sc, argumento);
+        scommand_set_redir_out(sc, arg);
         break;
       }
     }
     parser_skip_blanks(p);
   }
+
+  // if (arg == NULL) {
+  // ls >
+  // ls <
+  // ls - falla pero no con esto
+  if (arg_type == ARG_INPUT || arg_type == ARG_OUTPUT) {
+    scommand_destroy(sc);
+    printf("Error sintáctico.\n");
+    return NULL;
+  }
+
   return sc;
 }
 
@@ -70,13 +82,16 @@ pipeline parse_pipeline(Parser p) {
     }
   }
 
-  bool in_background;
-  parser_op_background(p, &in_background);
-  pipeline_set_wait(result, !in_background);
+  // in the background
+  // is a background job
+  bool in_the_background;
+  parser_op_background(p, &in_the_background);
+  pipeline_set_wait(result, !in_the_background);
   bool trash;
   parser_garbage(p, &trash);
 
-  if (error) {
+  if (trash || error) {
+    printf("Error sintáctico.\n");
     result = pipeline_destroy(result);
     result = NULL;
   }

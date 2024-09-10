@@ -52,6 +52,7 @@ int main(int argc, char *argv[]) {
 
     quit = parser_at_eof(input);
   }
+  printf("exit\n");
   parser_destroy(input);
   input = NULL;
   return EXIT_SUCCESS;

@@ -31,30 +31,34 @@ static void execute_external_command(scommand sc) {
   // Seteo de redirección de la entrada estándar
   char *redirIN = scommand_get_redir_in(sc);
   if (redirIN != NULL) {
-    int fd =
-        open(redirIN, O_RDONLY, S_IRWXU); // Abre el archivo en modo lectura
-    if (fd < 0) {
+    int fd = open(redirIN, O_RDONLY); // Abre el archivo en modo lectura
+    if (fd == -1) {
       fprintf(stderr, "Error al abrir el archivo de input: %s\n", redirIN);
       exit(EXIT_FAILURE);
     }
-    dup2(fd,
-         STDIN_FILENO); // Redirecciona la entrada estándar al archivo abierto
-    close(fd);
+    if (fd != -1) {
+      dup2(fd,
+           STDIN_FILENO); // Redirecciona la entrada estándar al archivo abierto
+      close(fd);
+    }
   }
 
   // Seteo de redirección de la salida estándar
   char *redirOUT = scommand_get_redir_out(sc);
+  mode_t permissions = S_IRUSR | S_IWUSR; // rw- ??? ???
   if (redirOUT != NULL) {
     int fd = open(redirOUT, O_WRONLY | O_CREAT,
-                  S_IRWXU); // Abre el archivo de salida, creándolo si
-                            // no existe, y trunca su contenido
-    if (fd < 0) {
+                  permissions); // Abre el archivo de salida, creándolo si
+                                // no existe, y trunca su contenido
+    if (fd == -1) {
       fprintf(stderr, "Error al abrir el archivo de output: %s\n", redirOUT);
       exit(EXIT_FAILURE);
     }
-    dup2(fd,
-         STDOUT_FILENO); // Redirecciona la salida estándar al archivo abierto
-    close(fd);
+    if (fd != -1) {
+      dup2(fd,
+           STDOUT_FILENO); // Redirecciona la salida estándar al archivo abierto
+      close(fd);
+    }
   }
 
   // Ejecución del comando externo
