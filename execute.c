@@ -79,17 +79,20 @@ static void execute_one_command(pipeline apipe) {
   // Precondiciones
   assert(apipe != NULL);
   assert(pipeline_length(apipe) == 1);
-
   int pid = fork(); // Crea un nuevo proceso
-
-  if (pid < 0) { // Error en el fork
+  if (pid < 0) {    // Error en el fork
     perror("fork() ha fallado.\n");
     exit(EXIT_FAILURE);
-  } else if (pid == 0) { // PROCESO HIJO
+  }
+  if (pid == 0) { // PROCESO HIJO
     execute_external_command(pipeline_front(apipe));
-  } else { // PROCESO PADRE
+  }
+  if (pid > 0) { // PROCESO PADRE
     if (pipeline_get_wait(apipe)) {
       wait(NULL); // Si el pipeline pide esperar, espera a que termine el hijo
+    }
+    if (!pipeline_get_wait(apipe)) { // No quiero zombies
+      signal(SIGCHLD, SIG_IGN);
     }
     pipeline_pop_front(apipe);
   }
