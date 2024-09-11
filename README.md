@@ -25,7 +25,7 @@ En este proyecto de laboratorio impartido por la cátedra de **Sistemas Operativ
 Para poder compilar y ejecutar el proyecto, es necesario tener instaladas las siguientes herramientas:
  - Librería [`glib`](https://gitlab.gnome.org/GNOME/glib/) 
  - Librería [`check`](https://libcheck.github.io/check/)
- - Fuente monoespaciada con soporte de caracteres unicode: *JetBrains Mono*
+ - Fuente monoespaciada con soporte de caracteres unicode: [`JetBrains Mono`](https://www.jetbrains.com/es-es/lp/mono/)
 
 
 ## **Compilación y ejecución**
