@@ -1,19 +1,16 @@
 # Laboratorio 1: "myBash" - Grupo 1 - FaMAF (2024)
 
-  ███╗   ███╗██╗   ██╗██████╗  █████╗ ███████╗██╗  ██╗    ██╗   ██╗ ██╗    ██████╗  
-  ████╗ ████║╚██╗ ██╔╝██╔══██╗██╔══██╗██╔════╝██║  ██║    ██║   ██║███║   ██╔═████╗ 
-  ██╔████╔██║ ╚████╔╝ ██████╔╝███████║███████╗███████║    ██║   ██║╚██║   ██║██╔██║ 
-  ██║╚██╔╝██║  ╚██╔╝  ██╔══██╗██╔══██║╚════██║██╔══██║    ╚██╗ ██╔╝ ██║   ████╔╝██║ 
-  ██║ ╚═╝ ██║   ██║   ██████╔╝██║  ██║███████║██║  ██║     ╚████╔╝  ██║██╗╚██████╔╝ 
-  ╚═╝     ╚═╝   ╚═╝   ╚═════╝ ╚═╝  ╚═╝╚══════╝╚═╝  ╚═╝      ╚═══╝   ╚═╝╚═╝ ╚═════╝  
-╔═══════════════════════════════════════════════════════════════════════════════════╗ 
-║                 Está usando la shell codificada por :(){ :|:& };:                 ║ 
-╚═══════════════════════════════════════════════════════════════════════════════════╝ 
-
 Los **autores** que colaboraron para la creación del mismo son: 
  - Juan Cruz Hermosilla Artico
  - Gaspar Saenz Valiente
  - Fernando Cabrera Luque
+
+Los **comandos internos** de este bash son:
+-  cd : Permite desplazarse entre los directorios del sistema.
+- help : Muestra información de myBash.
+- exit : Es para salir de la sesión.
+-  :) : Printea una carita.
+- cmds : Muestra los comandos builtin y sus descripciones.
 
 
 ## **Índice**
